@@ -1,0 +1,26 @@
+[package]
+name = "jkms"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ratatui = "0.25"
+crossterm = "0.27"
+clap = { version = "4.0", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+chrono = { version = "0.4", features = ["serde"] }
+similar = "2.0"
+clipboard = "0.5"
+notify = "6.0"
+tokio = { version = "1.0", features = ["full"] }
+gray_matter = "0.2"
+sha2 = "0.10"
+anyhow = "1.0"
+thiserror = "1.0"
+dirs = "5.0"
+
+[dev-dependencies]
+tempfile = "3.0"
+assert_cmd = "2.0"
+predicates = "3.0"
