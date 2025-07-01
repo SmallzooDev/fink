@@ -1,5 +1,4 @@
 use crate::ui::app::App;
-use anyhow::Result;
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
@@ -7,16 +6,14 @@ use ratatui::{
     text::{Line, Span},
     widgets::{Block, Borders, List, ListItem, Paragraph},
 };
-use std::path::PathBuf;
 
-pub struct QuickSelectScreen {
-    app: App,
+pub struct QuickSelectScreen<'a> {
+    app: &'a App,
 }
 
-impl QuickSelectScreen {
-    pub fn new(base_path: PathBuf) -> Result<Self> {
-        let app = App::new(base_path)?;
-        Ok(Self { app })
+impl<'a> QuickSelectScreen<'a> {
+    pub fn new(app: &'a App) -> Self {
+        Self { app }
     }
 
     pub fn render(&self, f: &mut Frame, area: Rect) {

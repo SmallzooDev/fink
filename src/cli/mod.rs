@@ -95,7 +95,7 @@ pub fn run(base_path: PathBuf) -> Result<()> {
     loop {
         // Draw UI
         terminal.draw(|f| {
-            let screen = QuickSelectScreen::new(base_path.clone()).unwrap();
+            let screen = QuickSelectScreen::new(&app);
             screen.render(f, f.size());
         })?;
 
