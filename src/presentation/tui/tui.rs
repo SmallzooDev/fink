@@ -20,6 +20,10 @@ pub struct TUIApp {
 
 impl TUIApp {
     pub fn new(base_path: PathBuf) -> Result<Self> {
+        Self::new_with_mode(base_path, AppMode::QuickSelect)
+    }
+
+    pub fn new_with_mode(base_path: PathBuf, mode: AppMode) -> Result<Self> {
         let application = DefaultPromptApplication::new(base_path)?;
         let prompts_metadata = application.list_prompts(None)?;
         
@@ -32,7 +36,7 @@ impl TUIApp {
         let prompt_list = PromptList::new(prompts);
 
         Ok(Self {
-            mode: AppMode::QuickSelect,
+            mode,
             should_quit: false,
             prompt_list,
             application,
@@ -89,5 +93,12 @@ impl TUIApp {
         } else {
             Err(anyhow::anyhow!("No prompt selected"))
         }
+    }
+
+    pub fn toggle_mode(&mut self) {
+        self.mode = match self.mode {
+            AppMode::QuickSelect => AppMode::Management,
+            AppMode::Management => AppMode::QuickSelect,
+        };
     }
 }

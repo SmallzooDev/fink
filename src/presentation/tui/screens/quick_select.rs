@@ -1,4 +1,4 @@
-use crate::presentation::tui::tui::TUIApp;
+use crate::presentation::tui::tui::{TUIApp, AppMode};
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
@@ -27,7 +27,11 @@ impl<'a> QuickSelectScreen<'a> {
             .split(area);
 
         // Header
-        let header = Paragraph::new("jkms Manager")
+        let mode_text = match self.app.mode() {
+            AppMode::QuickSelect => "jkms Manager - Quick Select",
+            AppMode::Management => "jkms Manager - Management Mode",
+        };
+        let header = Paragraph::new(mode_text)
             .style(Style::default().fg(Color::Cyan))
             .block(Block::default().borders(Borders::ALL));
         f.render_widget(header, chunks[0]);
@@ -51,7 +55,11 @@ impl<'a> QuickSelectScreen<'a> {
         f.render_stateful_widget(list, chunks[1], &mut list_state);
 
         // Footer
-        let footer = Paragraph::new("↑↓: Navigate  Enter: Copy  Esc: Exit")
+        let footer_text = match self.app.mode() {
+            AppMode::QuickSelect => "↑↓: Navigate  Enter: Copy  m: Manage  Esc: Exit",
+            AppMode::Management => "↑↓: Navigate  e: Edit  d: Delete  n: New  m: Quick  Esc: Exit",
+        };
+        let footer = Paragraph::new(footer_text)
             .style(Style::default().fg(Color::Gray))
             .block(Block::default().borders(Borders::ALL));
         f.render_widget(footer, chunks[2]);
