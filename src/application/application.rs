@@ -163,4 +163,8 @@ tags: []
         
         Ok(())
     }
+
+    fn get_base_path(&self) -> &std::path::Path {
+        self.repository.get_base_path()
+    }
 }

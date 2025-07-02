@@ -11,4 +11,5 @@ pub trait PromptApplication {
     fn edit_prompt(&self, name: &str) -> Result<()>;
     fn delete_prompt(&self, name: &str, force: bool) -> Result<()>;
     fn copy_prompt(&self, name: &str) -> Result<()>;
+    fn get_base_path(&self) -> &std::path::Path;
 }

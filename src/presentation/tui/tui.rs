@@ -11,11 +11,17 @@ pub enum AppMode {
     Management,
 }
 
+#[derive(Debug, PartialEq)]
+pub enum PendingAction {
+    Edit,
+}
+
 pub struct TUIApp {
     mode: AppMode,
     should_quit: bool,
     prompt_list: PromptList,
     application: DefaultPromptApplication,
+    pending_action: Option<PendingAction>,
 }
 
 impl TUIApp {
@@ -40,6 +46,7 @@ impl TUIApp {
             should_quit: false,
             prompt_list,
             application,
+            pending_action: None,
         })
     }
 
@@ -100,5 +107,85 @@ impl TUIApp {
             AppMode::QuickSelect => AppMode::Management,
             AppMode::Management => AppMode::QuickSelect,
         };
+    }
+
+    pub fn edit_selected(&mut self) -> Result<()> {
+        if let Some(prompt) = self.prompt_list.get_selected() {
+            // Get the file path
+            let file_path = std::path::Path::new(self.application.get_base_path())
+                .join("jkms")
+                .join(&prompt.file_path);
+            
+            // Get editor from environment variable
+            let editor = std::env::var("EDITOR")
+                .or_else(|_| std::env::var("VISUAL"))
+                .unwrap_or_else(|_| "vim".to_string());
+            
+            // Launch the editor
+            let status = std::process::Command::new(&editor)
+                .arg(&file_path)
+                .status()?;
+            
+            if !status.success() {
+                return Err(anyhow::anyhow!("Editor exited with non-zero status"));
+            }
+            
+            // Reload prompts after editing
+            self.reload_prompts()?;
+            
+            Ok(())
+        } else {
+            Err(anyhow::anyhow!("No prompt selected"))
+        }
+    }
+
+    pub fn delete_selected(&mut self) -> Result<()> {
+        if let Some(prompt) = self.prompt_list.get_selected() {
+            self.application.delete_prompt(&prompt.name, true)?;
+            
+            // Reload prompts after deletion
+            self.reload_prompts()?;
+            
+            Ok(())
+        } else {
+            Err(anyhow::anyhow!("No prompt selected"))
+        }
+    }
+
+    pub fn create_new_prompt(&mut self) -> Result<()> {
+        // For now, create a simple prompt
+        // Later we can add a prompt creation dialog
+        let name = format!("new-prompt-{}", chrono::Utc::now().timestamp());
+        self.application.create_prompt(&name, None)?;
+        
+        // Reload prompts after creation
+        self.reload_prompts()?;
+        
+        Ok(())
+    }
+
+    fn reload_prompts(&mut self) -> Result<()> {
+        let prompts_metadata = self.application.list_prompts(None)?;
+        
+        // Convert metadata to storage format for compatibility
+        let prompts = prompts_metadata.iter().map(|m| crate::storage::Prompt {
+            name: m.name.clone(),
+            file_path: m.file_path.clone(),
+        }).collect();
+        
+        self.prompt_list = PromptList::new(prompts);
+        Ok(())
+    }
+
+    pub fn get_base_path(&self) -> &std::path::Path {
+        self.application.get_base_path()
+    }
+
+    pub fn set_pending_action(&mut self, action: Option<PendingAction>) {
+        self.pending_action = action;
+    }
+
+    pub fn take_pending_action(&mut self) -> Option<PendingAction> {
+        self.pending_action.take()
     }
 }

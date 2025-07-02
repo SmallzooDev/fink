@@ -66,6 +66,29 @@ impl EventHandler {
                 KeyCode::Char('m') => {
                     app.toggle_mode();
                 }
+                KeyCode::Char('e') => {
+                    if matches!(app.mode(), AppMode::Management) {
+                        // For now, just mark that edit was requested
+                        // The actual editor launch will be handled in the main loop
+                        app.set_pending_action(Some(crate::presentation::tui::tui::PendingAction::Edit));
+                    }
+                }
+                KeyCode::Char('d') => {
+                    if matches!(app.mode(), AppMode::Management) {
+                        if let Err(e) = app.delete_selected() {
+                            // TODO: Show error in UI
+                            eprintln!("Error deleting prompt: {}", e);
+                        }
+                    }
+                }
+                KeyCode::Char('n') => {
+                    if matches!(app.mode(), AppMode::Management) {
+                        if let Err(e) = app.create_new_prompt() {
+                            // TODO: Show error in UI
+                            eprintln!("Error creating prompt: {}", e);
+                        }
+                    }
+                }
                 _ => {}
             }
         }
@@ -111,6 +134,32 @@ fn run_with_mode(base_path: PathBuf, manage_mode: bool) -> Result<()> {
         // Handle events
         if let Ok(event) = event::read() {
             event_handler.handle_event(&mut app, event)?;
+        }
+
+        // Handle pending actions that require exiting TUI temporarily
+        if let Some(action) = app.take_pending_action() {
+            match action {
+                crate::presentation::tui::tui::PendingAction::Edit => {
+                    // Exit TUI temporarily
+                    disable_raw_mode()?;
+                    execute!(io::stdout(), terminal::LeaveAlternateScreen)?;
+                    
+                    // Edit the prompt
+                    let result = app.edit_selected();
+                    
+                    // Restore TUI
+                    enable_raw_mode()?;
+                    execute!(io::stdout(), terminal::EnterAlternateScreen)?;
+                    
+                    // Force a full redraw by clearing the terminal
+                    terminal.clear()?;
+                    
+                    if let Err(e) = result {
+                        // TODO: Show error in UI
+                        eprintln!("Error editing prompt: {}", e);
+                    }
+                }
+            }
         }
 
         if app.should_quit() {
