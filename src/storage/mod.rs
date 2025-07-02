@@ -16,6 +16,10 @@ impl FileSystem {
         Self { base_path }
     }
 
+    pub fn base_path(&self) -> &PathBuf {
+        &self.base_path
+    }
+
     pub fn list_prompts(&self) -> Result<Vec<Prompt>> {
         let prompts_dir = self.base_path.join("jkms");
         let mut prompts = Vec::new();

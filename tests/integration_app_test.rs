@@ -1,4 +1,4 @@
-use jkms::ui::app::{App, AppMode};
+use jkms::presentation::ui::app::{App, AppMode};
 use tempfile::tempdir;
 
 #[test]

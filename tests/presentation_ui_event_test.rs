@@ -1,6 +1,6 @@
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
-use jkms::cli::EventHandler;
-use jkms::ui::app::App;
+use jkms::presentation::ui::runner::EventHandler;
+use jkms::presentation::ui::app::App;
 use tempfile::tempdir;
 
 #[test]

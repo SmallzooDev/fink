@@ -1,7 +1,7 @@
 use crate::core::PromptManager;
 use crate::external::ClipboardManager;
 use crate::storage::{FileSystem, Prompt};
-use crate::ui::components::PromptList;
+use crate::presentation::ui::components::PromptList;
 use anyhow::Result;
 use ratatui::widgets::ListState;
 use std::path::PathBuf;

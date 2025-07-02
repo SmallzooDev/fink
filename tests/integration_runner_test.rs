@@ -1,4 +1,4 @@
-use jkms::cli::run_app;
+use jkms::presentation::ui::runner::run_app;
 use tempfile::tempdir;
 
 #[test]

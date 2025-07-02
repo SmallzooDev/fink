@@ -1,5 +1,5 @@
 use jkms::storage::Prompt;
-use jkms::ui::components::PromptList;
+use jkms::presentation::ui::components::PromptList;
 
 #[test]
 fn should_create_prompt_list_component() {
