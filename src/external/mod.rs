@@ -1,3 +1,5 @@
+pub mod editor;
+
 use anyhow::Result;
 use clipboard::{ClipboardContext, ClipboardProvider};
 

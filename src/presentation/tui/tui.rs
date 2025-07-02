@@ -117,24 +117,8 @@ impl TUIApp {
 
     pub fn edit_selected(&mut self) -> Result<()> {
         if let Some(prompt) = self.prompt_list.get_selected() {
-            // Get the file path
-            let file_path = std::path::Path::new(self.application.get_base_path())
-                .join("jkms")
-                .join(&prompt.file_path);
-            
-            // Get editor from environment variable
-            let editor = std::env::var("EDITOR")
-                .or_else(|_| std::env::var("VISUAL"))
-                .unwrap_or_else(|_| "vim".to_string());
-            
-            // Launch the editor
-            let status = std::process::Command::new(&editor)
-                .arg(&file_path)
-                .status()?;
-            
-            if !status.success() {
-                return Err(anyhow::anyhow!("Editor exited with non-zero status"));
-            }
+            // Delegate to the application layer
+            self.application.edit_prompt(&prompt.name)?;
             
             // Reload prompts after editing
             self.reload_prompts()?;

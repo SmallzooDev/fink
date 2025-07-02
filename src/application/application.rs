@@ -5,11 +5,12 @@ use crate::application::models::{PromptMetadata, PromptFilter, SearchType};
 use crate::application::repository::{PromptRepository, FileSystemRepository};
 use crate::application::traits::PromptApplication;
 use crate::storage::FileSystem;
-use crate::external::ClipboardManager;
+use crate::external::{ClipboardManager, editor::EditorLauncher};
 
 pub struct DefaultPromptApplication {
     repository: Box<dyn PromptRepository>,
     clipboard: RefCell<ClipboardManager>,
+    editor_launcher: EditorLauncher,
 }
 
 impl DefaultPromptApplication {
@@ -21,6 +22,7 @@ impl DefaultPromptApplication {
         Ok(Self {
             repository,
             clipboard,
+            editor_launcher: EditorLauncher::new(),
         })
     }
 }
@@ -118,19 +120,8 @@ tags: []
             .join("jkms")
             .join(&metadata.file_path);
         
-        // Get editor from environment variable
-        let editor = std::env::var("EDITOR")
-            .or_else(|_| std::env::var("VISUAL"))
-            .unwrap_or_else(|_| "vim".to_string());
-        
-        // Launch the editor
-        let status = std::process::Command::new(&editor)
-            .arg(&file_path)
-            .status()?;
-        
-        if !status.success() {
-            return Err(anyhow::anyhow!("Editor exited with non-zero status"));
-        }
+        // Launch the editor using the EditorLauncher
+        self.editor_launcher.launch(&file_path)?;
         
         Ok(())
     }
