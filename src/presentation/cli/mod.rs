@@ -1,8 +1,20 @@
 use crate::application::application::DefaultPromptApplication;
 use crate::application::traits::PromptApplication;
 use anyhow::Result;
+use crate::utils::error::JkmsError;
 use clap::Subcommand;
 use std::path::PathBuf;
+
+fn handle_error(error: JkmsError) -> ! {
+    eprintln!("Error: {}", error);
+    
+    // Show user-friendly message if available
+    if error.is_recoverable() {
+        eprintln!("\n{}", error.user_message());
+    }
+    
+    std::process::exit(1);
+}
 
 #[derive(Subcommand)]
 pub enum Commands {
@@ -74,37 +86,25 @@ pub fn execute_command(command: Commands, base_path: PathBuf) -> Result<()> {
                     println!("{}", content);
                     Ok(())
                 }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
-                    std::process::exit(1);
-                }
+                Err(e) => handle_error(e),
             }
         }
         Commands::Create { name, template } => {
             match application.create_prompt(&name, template.as_deref()) {
                 Ok(()) => Ok(()),
-                Err(e) => {
-                    eprintln!("Error: {}", e);
-                    std::process::exit(1);
-                }
+                Err(e) => handle_error(e),
             }
         }
         Commands::Edit { name } => {
             match application.edit_prompt(&name) {
                 Ok(()) => Ok(()),
-                Err(e) => {
-                    eprintln!("Error: {}", e);
-                    std::process::exit(1);
-                }
+                Err(e) => handle_error(e),
             }
         }
         Commands::Delete { name, force } => {
             match application.delete_prompt(&name, force) {
                 Ok(()) => Ok(()),
-                Err(e) => {
-                    eprintln!("Error: {}", e);
-                    std::process::exit(1);
-                }
+                Err(e) => handle_error(e),
             }
         }
         Commands::Copy { name } => {
@@ -113,10 +113,7 @@ pub fn execute_command(command: Commands, base_path: PathBuf) -> Result<()> {
                     println!("Copied to clipboard");
                     Ok(())
                 }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
-                    std::process::exit(1);
-                }
+                Err(e) => handle_error(e),
             }
         }
         Commands::Search { query } => {

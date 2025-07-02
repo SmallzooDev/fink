@@ -1,4 +1,4 @@
-use anyhow::Result;
+use crate::utils::error::{Result, JkmsError, PromptError, ExternalError};
 use std::path::PathBuf;
 use std::cell::RefCell;
 use crate::application::models::{PromptMetadata, PromptFilter, SearchType};
@@ -29,7 +29,8 @@ impl DefaultPromptApplication {
 
 impl PromptApplication for DefaultPromptApplication {
     fn list_prompts(&self, filter: Option<PromptFilter>) -> Result<Vec<PromptMetadata>> {
-        let mut prompts = self.repository.list_all()?;
+        let mut prompts = self.repository.list_all()
+            .map_err(|e| JkmsError::from(e))?;
         
         if let Some(filter) = filter {
             if let Some(tags) = filter.tags {
@@ -41,20 +42,24 @@ impl PromptApplication for DefaultPromptApplication {
     }
 
     fn get_prompt(&self, identifier: &str) -> Result<(PromptMetadata, String)> {
-        let metadata = self.repository.find_by_name(identifier)?
-            .ok_or_else(|| anyhow::anyhow!("Prompt not found: {}", identifier))?;
+        let metadata = self.repository.find_by_name(identifier)
+            .map_err(|e| JkmsError::from(e))?
+            .ok_or_else(|| JkmsError::Prompt(PromptError::NotFound(identifier.to_string())))?;
         
-        let content = self.repository.get_content(&metadata.file_path)?;
+        let content = self.repository.get_content(&metadata.file_path)
+            .map_err(|e| JkmsError::from(e))?;
         
         Ok((metadata, content))
     }
 
     fn copy_to_clipboard(&self, content: &str) -> Result<()> {
         self.clipboard.borrow_mut().copy(content)
+            .map_err(|e| JkmsError::External(ExternalError::ClipboardError(e.to_string())))
     }
 
     fn search_prompts(&self, query: &str, search_type: SearchType) -> Result<Vec<PromptMetadata>> {
         self.repository.search(query, search_type)
+            .map_err(|e| JkmsError::from(e))
     }
 
     fn create_prompt(&self, name: &str, template: Option<&str>) -> Result<()> {
@@ -62,7 +67,7 @@ impl PromptApplication for DefaultPromptApplication {
         
         // Check if prompt already exists
         if self.repository.prompt_exists(&normalized_name) {
-            return Err(anyhow::anyhow!("Prompt '{}' already exists", name));
+            return Err(JkmsError::Prompt(PromptError::AlreadyExists(name.to_string())));
         }
         
         let content = match template {
@@ -91,7 +96,7 @@ Please input your prompt's output indicator here!
 "#, name, name)
             }
             Some(template_name) => {
-                return Err(anyhow::anyhow!("Unknown template: {}", template_name));
+                return Err(JkmsError::Prompt(PromptError::InvalidFormat(format!("Unknown template: {}", template_name))));
             }
             None => {
                 // Create the default content
@@ -106,14 +111,16 @@ tags: []
         };
         
         // Create the prompt using repository
-        self.repository.create_prompt(&normalized_name, &content)?;
+        self.repository.create_prompt(&normalized_name, &content)
+            .map_err(|e| JkmsError::from(e))?;
         Ok(())
     }
 
     fn edit_prompt(&self, name: &str) -> Result<()> {
         // Find the prompt
-        let metadata = self.repository.find_by_name(name)?
-            .ok_or_else(|| anyhow::anyhow!("Prompt not found: {}", name))?;
+        let metadata = self.repository.find_by_name(name)
+            .map_err(|e| JkmsError::from(e))?
+            .ok_or_else(|| JkmsError::Prompt(PromptError::NotFound(name.to_string())))?;
         
         // Get the file path
         let file_path = std::path::Path::new(&self.repository.get_base_path())
@@ -128,19 +135,21 @@ tags: []
 
     fn delete_prompt(&self, name: &str, force: bool) -> Result<()> {
         // Find the prompt
-        let metadata = self.repository.find_by_name(name)?
-            .ok_or_else(|| anyhow::anyhow!("Prompt not found: {}", name))?;
+        let metadata = self.repository.find_by_name(name)
+            .map_err(|e| JkmsError::from(e))?
+            .ok_or_else(|| JkmsError::Prompt(PromptError::NotFound(name.to_string())))?;
         
         // If not forced, we would normally ask for confirmation here
         // For now, we'll implement the force flag behavior
         if !force {
             // In a real implementation, we would prompt for confirmation
             // For CLI testing, we'll skip this for now
-            return Err(anyhow::anyhow!("Deletion cancelled. Use --force to skip confirmation."));
+            return Err(JkmsError::Validation(crate::utils::error::ValidationError::InvalidInput("confirmation", "Deletion cancelled. Use --force to skip confirmation.".to_string())));
         }
         
         // Delete the prompt
-        self.repository.delete_prompt(&metadata.file_path)?;
+        self.repository.delete_prompt(&metadata.file_path)
+            .map_err(|e| JkmsError::from(e))?;
         
         Ok(())
     }

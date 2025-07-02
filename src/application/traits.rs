@@ -1,4 +1,4 @@
-use anyhow::Result;
+use crate::utils::error::Result;
 use crate::application::models::{PromptMetadata, PromptFilter, SearchType};
 
 /// Application layer for business operations
