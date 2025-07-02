@@ -1,6 +1,5 @@
-use crate::core::PromptManager;
-use crate::external::ClipboardManager;
-use crate::storage::{FileSystem, Prompt};
+use crate::application::service::DefaultPromptApplication;
+use crate::application::traits::PromptApplication;
 use crate::presentation::ui::components::PromptList;
 use anyhow::Result;
 use ratatui::widgets::ListState;
@@ -16,23 +15,27 @@ pub struct App {
     mode: AppMode,
     should_quit: bool,
     prompt_list: PromptList,
-    prompt_manager: PromptManager,
-    clipboard: ClipboardManager,
+    application: DefaultPromptApplication,
 }
 
 impl App {
     pub fn new(base_path: PathBuf) -> Result<Self> {
-        let storage = FileSystem::new(base_path.clone());
-        let prompts = storage.list_prompts()?;
-        let prompt_list = PromptList::new(prompts.clone());
-        let prompt_manager = PromptManager::new(base_path);
+        let application = DefaultPromptApplication::new(base_path)?;
+        let prompts_metadata = application.list_prompts(None)?;
+        
+        // Convert metadata to storage format for compatibility
+        let prompts = prompts_metadata.iter().map(|m| crate::storage::Prompt {
+            name: m.name.clone(),
+            file_path: m.file_path.clone(),
+        }).collect();
+        
+        let prompt_list = PromptList::new(prompts);
 
         Ok(Self {
             mode: AppMode::QuickSelect,
             should_quit: false,
             prompt_list,
-            prompt_manager,
-            clipboard: ClipboardManager::new(),
+            application,
         })
     }
 
@@ -62,13 +65,14 @@ impl App {
 
     pub fn get_selected_content(&self) -> Option<String> {
         self.prompt_list.get_selected().and_then(|prompt| {
-            self.prompt_manager
-                .get_prompt_content(&prompt.file_path)
+            self.application
+                .get_prompt(&prompt.name)
+                .map(|(_, content)| content)
                 .ok()
         })
     }
 
-    pub fn get_prompts(&self) -> &Vec<Prompt> {
+    pub fn get_prompts(&self) -> &Vec<crate::storage::Prompt> {
         self.prompt_list.prompts()
     }
 
@@ -80,7 +84,7 @@ impl App {
 
     pub fn copy_selected_to_clipboard(&mut self) -> Result<()> {
         if let Some(content) = self.get_selected_content() {
-            self.clipboard.copy(&content)?;
+            self.application.copy_to_clipboard(&content)?;
             Ok(())
         } else {
             Err(anyhow::anyhow!("No prompt selected"))

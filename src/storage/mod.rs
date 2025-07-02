@@ -1,5 +1,5 @@
 use anyhow::Result;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Clone)]
 pub struct Prompt {
@@ -18,6 +18,32 @@ impl FileSystem {
 
     pub fn base_path(&self) -> &PathBuf {
         &self.base_path
+    }
+
+    pub fn create_dir_all(&self, relative_path: &Path) -> Result<()> {
+        let full_path = self.base_path.join(relative_path);
+        std::fs::create_dir_all(full_path)?;
+        Ok(())
+    }
+
+    pub fn exists(&self, relative_path: &Path) -> bool {
+        self.base_path.join(relative_path).exists()
+    }
+
+    pub fn write(&self, relative_path: &Path, content: &str) -> Result<()> {
+        let full_path = self.base_path.join(relative_path);
+        std::fs::write(full_path, content)?;
+        Ok(())
+    }
+
+    pub fn read_to_string(&self, relative_path: &Path) -> Result<String> {
+        let full_path = self.base_path.join(relative_path);
+        let content = std::fs::read_to_string(full_path)?;
+        Ok(content)
+    }
+
+    pub fn join(&self, relative_path: &Path) -> PathBuf {
+        self.base_path.join(relative_path)
     }
 
     pub fn list_prompts(&self) -> Result<Vec<Prompt>> {

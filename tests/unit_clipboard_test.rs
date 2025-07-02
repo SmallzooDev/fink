@@ -1,4 +1,5 @@
-use jkms::core::PromptManager;
+use jkms::application::repository::{FileSystemRepository, PromptRepository};
+use jkms::storage::FileSystem;
 use tempfile::tempdir;
 
 #[test]
@@ -20,8 +21,9 @@ This is the content that should be copied to clipboard."#;
     std::fs::write(prompts_dir.join("test.md"), prompt_content).unwrap();
 
     // Act
-    let manager = PromptManager::new(temp_dir.path().to_path_buf());
-    let content = manager.get_prompt_content("test.md").unwrap();
+    let storage = FileSystem::new(temp_dir.path().to_path_buf());
+    let repository = FileSystemRepository::new(storage);
+    let content = repository.get_content("test.md").unwrap();
 
     // Assert
     assert_eq!(

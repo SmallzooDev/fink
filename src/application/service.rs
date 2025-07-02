@@ -5,25 +5,21 @@ use crate::application::models::{PromptMetadata, PromptFilter, SearchType};
 use crate::application::repository::{PromptRepository, FileSystemRepository};
 use crate::application::traits::PromptApplication;
 use crate::storage::FileSystem;
-use crate::core::PromptManager;
 use crate::external::ClipboardManager;
 
 pub struct DefaultPromptApplication {
     repository: Box<dyn PromptRepository>,
-    prompt_manager: PromptManager,
     clipboard: RefCell<ClipboardManager>,
 }
 
 impl DefaultPromptApplication {
     pub fn new(base_path: PathBuf) -> Result<Self> {
-        let storage = FileSystem::new(base_path.clone());
+        let storage = FileSystem::new(base_path);
         let repository = Box::new(FileSystemRepository::new(storage));
-        let prompt_manager = PromptManager::new(base_path);
         let clipboard = RefCell::new(ClipboardManager::new());
 
         Ok(Self {
             repository,
-            prompt_manager,
             clipboard,
         })
     }
@@ -46,7 +42,7 @@ impl PromptApplication for DefaultPromptApplication {
         let metadata = self.repository.find_by_name(identifier)?
             .ok_or_else(|| anyhow::anyhow!("Prompt not found: {}", identifier))?;
         
-        let content = self.prompt_manager.get_prompt_content(&metadata.file_path)?;
+        let content = self.repository.get_content(&metadata.file_path)?;
         
         Ok((metadata, content))
     }
