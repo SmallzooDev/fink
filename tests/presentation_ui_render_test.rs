@@ -1,5 +1,5 @@
-use jkms::presentation::ui::screens::QuickSelectScreen;
-use jkms::presentation::ui::app::App;
+use jkms::presentation::tui::screens::QuickSelectScreen;
+use jkms::presentation::tui::tui::TUIApp;
 use ratatui::Terminal;
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
@@ -19,7 +19,7 @@ fn should_render_quick_select_screen() {
     let mut terminal = Terminal::new(backend).unwrap();
 
     // Create App instance
-    let app = App::new(temp_dir.path().to_path_buf()).unwrap();
+    let app = TUIApp::new(temp_dir.path().to_path_buf()).unwrap();
 
     // Act
     terminal

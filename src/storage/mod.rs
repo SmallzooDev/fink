@@ -83,7 +83,7 @@ impl FileSystem {
 }
 
 fn extract_name_from_content(content: &str) -> Option<String> {
-    // Very simple frontmatter parsing for now
+    // Very simple front-matter parsing for now
     if content.starts_with("---\n") {
         let parts: Vec<&str> = content.splitn(3, "---\n").collect();
         if parts.len() >= 2 {

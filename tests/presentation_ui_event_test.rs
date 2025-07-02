@@ -1,13 +1,13 @@
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
-use jkms::presentation::ui::runner::EventHandler;
-use jkms::presentation::ui::app::App;
+use jkms::presentation::tui::runner::EventHandler;
+use jkms::presentation::tui::tui::TUIApp;
 use tempfile::tempdir;
 
 #[test]
 fn should_handle_quit_event() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let mut app = App::new(temp_dir.path().to_path_buf()).unwrap();
+    let mut app = TUIApp::new(temp_dir.path().to_path_buf()).unwrap();
     let handler = EventHandler::new();
 
     // Act
@@ -29,7 +29,7 @@ fn should_handle_navigation_down() {
     std::fs::write(prompts_dir.join("test1.md"), "# Test 1").unwrap();
     std::fs::write(prompts_dir.join("test2.md"), "# Test 2").unwrap();
 
-    let mut app = App::new(temp_dir.path().to_path_buf()).unwrap();
+    let mut app = TUIApp::new(temp_dir.path().to_path_buf()).unwrap();
     let handler = EventHandler::new();
 
     // Act
@@ -55,7 +55,7 @@ name: "Test Prompt"
 
     std::fs::write(prompts_dir.join("test.md"), content).unwrap();
 
-    let mut app = App::new(temp_dir.path().to_path_buf()).unwrap();
+    let mut app = TUIApp::new(temp_dir.path().to_path_buf()).unwrap();
     let handler = EventHandler::new();
 
     // Act

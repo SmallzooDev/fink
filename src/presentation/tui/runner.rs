@@ -1,5 +1,5 @@
-use crate::presentation::ui::app::App;
-use crate::presentation::ui::screens::QuickSelectScreen;
+use crate::presentation::tui::tui::TUIApp;
+use crate::presentation::tui::screens::QuickSelectScreen;
 use anyhow::Result;
 use crossterm::event::{self, Event, KeyCode};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
@@ -9,23 +9,23 @@ use ratatui::backend::CrosstermBackend;
 use std::io;
 use std::path::PathBuf;
 
-pub struct AppRunner {
-    app: App,
+pub struct TUI {
+    app: TUIApp,
 }
 
-impl AppRunner {
+impl TUI {
     pub fn new(base_path: PathBuf) -> Result<Self> {
-        let app = App::new(base_path)?;
+        let app = TUIApp::new(base_path)?;
         Ok(Self { app })
     }
 
-    pub fn app(&self) -> &App {
+    pub fn app(&self) -> &TUIApp {
         &self.app
     }
 }
 
-pub fn run_app(base_path: PathBuf) -> Result<AppRunner> {
-    AppRunner::new(base_path)
+pub fn run_app(base_path: PathBuf) -> Result<TUI> {
+    TUI::new(base_path)
 }
 
 pub struct EventHandler;
@@ -43,7 +43,7 @@ impl Default for EventHandler {
 }
 
 impl EventHandler {
-    pub fn handle_event(&self, app: &mut App, event: Event) -> Result<()> {
+    pub fn handle_event(&self, app: &mut TUIApp, event: Event) -> Result<()> {
         if let Event::Key(key) = event {
             match key.code {
                 KeyCode::Esc | KeyCode::Char('q') => {
@@ -75,7 +75,7 @@ pub fn run(base_path: PathBuf) -> Result<()> {
     let mut terminal = Terminal::new(backend)?;
 
     // Create app
-    let mut app = App::new(base_path.clone())?;
+    let mut app = TUIApp::new(base_path.clone())?;
     let event_handler = EventHandler::new();
 
     // Main loop

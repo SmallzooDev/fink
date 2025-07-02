@@ -1,6 +1,6 @@
 use clap::Parser;
 use jkms::presentation::cli::{Commands, execute_command};
-use jkms::presentation::ui::runner::run;
+use jkms::presentation::tui::runner::run;
 use std::path::PathBuf;
 
 #[derive(Parser)]

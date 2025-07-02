@@ -1,4 +1,4 @@
-use jkms::presentation::ui::app::{App, AppMode};
+use jkms::presentation::tui::tui::{TUIApp, AppMode};
 use tempfile::tempdir;
 
 #[test]
@@ -7,7 +7,7 @@ fn should_create_app_with_initial_state() {
     let temp_dir = tempdir().unwrap();
 
     // Act
-    let app = App::new(temp_dir.path().to_path_buf()).unwrap();
+    let app = TUIApp::new(temp_dir.path().to_path_buf()).unwrap();
 
     // Assert
     assert_eq!(app.mode(), &AppMode::QuickSelect);
@@ -18,7 +18,7 @@ fn should_create_app_with_initial_state() {
 fn should_handle_quit_command() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let mut app = App::new(temp_dir.path().to_path_buf()).unwrap();
+    let mut app = TUIApp::new(temp_dir.path().to_path_buf()).unwrap();
 
     // Act
     app.quit();
@@ -37,7 +37,7 @@ fn should_handle_navigation() {
     std::fs::write(prompts_dir.join("test1.md"), "# Test 1").unwrap();
     std::fs::write(prompts_dir.join("test2.md"), "# Test 2").unwrap();
 
-    let mut app = App::new(temp_dir.path().to_path_buf()).unwrap();
+    let mut app = TUIApp::new(temp_dir.path().to_path_buf()).unwrap();
 
     // Act
     app.next();
@@ -61,7 +61,7 @@ This is test content."#;
 
     std::fs::write(prompts_dir.join("test.md"), content).unwrap();
 
-    let app = App::new(temp_dir.path().to_path_buf()).unwrap();
+    let app = TUIApp::new(temp_dir.path().to_path_buf()).unwrap();
 
     // Act
     let selected_content = app.get_selected_content();
@@ -89,7 +89,7 @@ This is test content."#;
 
     std::fs::write(prompts_dir.join("test.md"), content).unwrap();
 
-    let mut app = App::new(temp_dir.path().to_path_buf()).unwrap();
+    let mut app = TUIApp::new(temp_dir.path().to_path_buf()).unwrap();
 
     // Act
     let result = app.copy_selected_to_clipboard();

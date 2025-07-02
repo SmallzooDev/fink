@@ -1,4 +1,4 @@
-use crate::application::service::DefaultPromptApplication;
+use crate::application::application::DefaultPromptApplication;
 use crate::application::traits::PromptApplication;
 use anyhow::Result;
 use clap::Subcommand;

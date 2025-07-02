@@ -1,6 +1,6 @@
-use crate::application::service::DefaultPromptApplication;
+use crate::application::application::DefaultPromptApplication;
 use crate::application::traits::PromptApplication;
-use crate::presentation::ui::components::PromptList;
+use crate::presentation::tui::components::PromptList;
 use anyhow::Result;
 use ratatui::widgets::ListState;
 use std::path::PathBuf;
@@ -11,14 +11,14 @@ pub enum AppMode {
     Management,
 }
 
-pub struct App {
+pub struct TUIApp {
     mode: AppMode,
     should_quit: bool,
     prompt_list: PromptList,
     application: DefaultPromptApplication,
 }
 
-impl App {
+impl TUIApp {
     pub fn new(base_path: PathBuf) -> Result<Self> {
         let application = DefaultPromptApplication::new(base_path)?;
         let prompts_metadata = application.list_prompts(None)?;

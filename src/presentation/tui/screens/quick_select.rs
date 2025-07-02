@@ -1,4 +1,4 @@
-use crate::presentation::ui::app::App;
+use crate::presentation::tui::tui::TUIApp;
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
@@ -8,11 +8,11 @@ use ratatui::{
 };
 
 pub struct QuickSelectScreen<'a> {
-    app: &'a App,
+    app: &'a TUIApp,
 }
 
 impl<'a> QuickSelectScreen<'a> {
-    pub fn new(app: &'a App) -> Self {
+    pub fn new(app: &'a TUIApp) -> Self {
         Self { app }
     }
 
