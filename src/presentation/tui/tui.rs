@@ -1,6 +1,6 @@
 use crate::application::application::DefaultPromptApplication;
 use crate::application::traits::PromptApplication;
-use crate::presentation::tui::components::PromptList;
+use crate::presentation::tui::components::{PromptList, confirmation_dialog::{ConfirmationDialog as Dialog, ConfirmationAction}};
 use anyhow::Result;
 use ratatui::widgets::ListState;
 use std::path::PathBuf;
@@ -16,24 +16,13 @@ pub enum PendingAction {
     Edit,
 }
 
-#[derive(Debug, PartialEq)]
-pub struct ConfirmationDialog {
-    pub message: String,
-    pub action: ConfirmationAction,
-}
-
-#[derive(Debug, PartialEq)]
-pub enum ConfirmationAction {
-    Delete(String), // prompt name
-}
-
 pub struct TUIApp {
     mode: AppMode,
     should_quit: bool,
     prompt_list: PromptList,
     application: DefaultPromptApplication,
     pending_action: Option<PendingAction>,
-    confirmation_dialog: Option<ConfirmationDialog>,
+    confirmation_dialog: Option<Dialog>,
 }
 
 impl TUIApp {
@@ -171,15 +160,19 @@ impl TUIApp {
     }
 
     pub fn get_confirmation_message(&self) -> Option<String> {
-        self.confirmation_dialog.as_ref().map(|d| d.message.clone())
+        self.confirmation_dialog.as_ref().map(|d| d.get_message().to_string())
+    }
+    
+    pub fn get_confirmation_dialog(&self) -> Option<&Dialog> {
+        self.confirmation_dialog.as_ref()
     }
 
     pub fn show_delete_confirmation(&mut self) {
         if let Some(prompt) = self.prompt_list.get_selected() {
-            self.confirmation_dialog = Some(ConfirmationDialog {
-                message: format!("Are you sure you want to delete '{}'?", prompt.name),
-                action: ConfirmationAction::Delete(prompt.name.clone()),
-            });
+            self.confirmation_dialog = Some(Dialog::new(
+                format!("Are you sure you want to delete '{}'?", prompt.name),
+                ConfirmationAction::Delete(prompt.name.clone()),
+            ));
         }
     }
 
@@ -189,11 +182,12 @@ impl TUIApp {
 
     pub fn confirm_action(&mut self) -> Result<()> {
         if let Some(dialog) = self.confirmation_dialog.take() {
-            match dialog.action {
+            match dialog.get_action() {
                 ConfirmationAction::Delete(name) => {
-                    self.application.delete_prompt(&name, true)?;
+                    self.application.delete_prompt(name, true)?;
                     self.reload_prompts()?;
                 }
+                _ => {} // Handle other action types in the future
             }
         }
         Ok(())

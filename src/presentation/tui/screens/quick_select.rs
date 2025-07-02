@@ -59,8 +59,8 @@ impl<'a> QuickSelectScreen<'a> {
         f.render_widget(footer, chunks[2]);
 
         // Render confirmation dialog if showing
-        if self.app.is_showing_confirmation() {
-            self.render_confirmation_dialog(f, area);
+        if let Some(dialog) = self.app.get_confirmation_dialog() {
+            dialog.render(f, area);
         }
     }
 
@@ -110,51 +110,4 @@ impl<'a> QuickSelectScreen<'a> {
         f.render_widget(preview, area);
     }
 
-    fn render_confirmation_dialog(&self, f: &mut Frame, area: Rect) {
-        use ratatui::widgets::Clear;
-        
-        // Calculate centered dialog size
-        let dialog_width = 60;
-        let dialog_height = 7;
-        
-        let x = (area.width.saturating_sub(dialog_width)) / 2;
-        let y = (area.height.saturating_sub(dialog_height)) / 2;
-        
-        let dialog_area = Rect {
-            x: area.x + x,
-            y: area.y + y,
-            width: dialog_width.min(area.width),
-            height: dialog_height.min(area.height),
-        };
-        
-        // Clear the background
-        f.render_widget(Clear, dialog_area);
-        
-        // Create the dialog content
-        let message = self.app.get_confirmation_message()
-            .unwrap_or_else(|| "Confirm action?".to_string());
-        
-        let text = vec![
-            Line::from(""),
-            Line::from(Span::raw(&message)),
-            Line::from(""),
-            Line::from(vec![
-                Span::raw("Press "),
-                Span::styled("[Y]es", Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
-                Span::raw(" to confirm or "),
-                Span::styled("[N]o", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
-                Span::raw(" to cancel"),
-            ]),
-        ];
-        
-        let dialog = Paragraph::new(text)
-            .block(Block::default()
-                .borders(Borders::ALL)
-                .border_style(Style::default().fg(Color::Yellow))
-                .title("Confirmation")
-                .title_alignment(ratatui::layout::Alignment::Center))
-            .alignment(ratatui::layout::Alignment::Center);
-        
-        f.render_widget(dialog, dialog_area);
-    }
 }
