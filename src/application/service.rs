@@ -54,4 +54,57 @@ impl PromptApplication for DefaultPromptApplication {
     fn search_prompts(&self, query: &str, search_type: SearchType) -> Result<Vec<PromptMetadata>> {
         self.repository.search(query, search_type)
     }
+
+    fn create_prompt(&self, name: &str, template: Option<&str>) -> Result<()> {
+        let normalized_name = name.to_lowercase().replace(' ', "-");
+        
+        // Check if prompt already exists
+        if self.repository.prompt_exists(&normalized_name) {
+            return Err(anyhow::anyhow!("Prompt '{}' already exists", name));
+        }
+        
+        let content = match template {
+            Some("basic") => {
+                format!(r#"---
+name: "{}"
+tags: []
+---
+# {}
+
+# Instruction
+(a specific task or instruction you want the model to perform)
+Please input your prompt's instruction in here!
+
+# Context
+(external information or additional context that can steer the model to better responses)
+Please input your prompt's context in here!
+
+# Input Data
+(the input or question that we are interested to find a response for)
+Please input your prompt's input data in here!
+
+# Output Indicator
+(the type or format of the output)
+Please input your prompt's output indicator here!
+"#, name, name)
+            }
+            Some(template_name) => {
+                return Err(anyhow::anyhow!("Unknown template: {}", template_name));
+            }
+            None => {
+                // Create the default content
+                format!(r#"---
+name: "{}"
+tags: []
+---
+# {}
+
+"#, name, name)
+            }
+        };
+        
+        // Create the prompt using repository
+        self.repository.create_prompt(&normalized_name, &content)?;
+        Ok(())
+    }
 }
