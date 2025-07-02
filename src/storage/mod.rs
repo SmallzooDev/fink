@@ -80,6 +80,12 @@ impl FileSystem {
 
         Ok(prompts)
     }
+
+    pub fn delete(&self, relative_path: &Path) -> Result<()> {
+        let full_path = self.base_path.join(relative_path);
+        std::fs::remove_file(full_path)?;
+        Ok(())
+    }
 }
 
 fn extract_name_from_content(content: &str) -> Option<String> {

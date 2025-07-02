@@ -263,3 +263,123 @@ fn should_fail_when_editing_nonexistent_prompt() {
         .failure()
         .stderr(predicate::str::contains("Prompt not found"));
 }
+
+#[test]
+fn should_delete_prompt_with_force_flag() {
+    // Arrange
+    let temp_dir = tempdir().unwrap();
+    let prompts_dir = temp_dir.path().join("jkms");
+    std::fs::create_dir(&prompts_dir).unwrap();
+    
+    let prompt_content = r#"---
+name: "Test Prompt"
+tags: ["test"]
+---
+# Test Content"#;
+    
+    let prompt_file = prompts_dir.join("test-prompt.md");
+    std::fs::write(&prompt_file, prompt_content).unwrap();
+    
+    // Act & Assert
+    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    cmd.arg("delete")
+        .arg("test-prompt")
+        .arg("--force")
+        .arg("--path")
+        .arg(temp_dir.path())
+        .assert()
+        .success();
+    
+    // Verify the file was deleted
+    assert!(!prompt_file.exists());
+}
+
+#[test]
+fn should_require_force_flag_for_deletion() {
+    // Arrange
+    let temp_dir = tempdir().unwrap();
+    let prompts_dir = temp_dir.path().join("jkms");
+    std::fs::create_dir(&prompts_dir).unwrap();
+    
+    let prompt_content = r#"---
+name: "Test Prompt"
+tags: ["test"]
+---
+# Test Content"#;
+    
+    let prompt_file = prompts_dir.join("test-prompt.md");
+    std::fs::write(&prompt_file, prompt_content).unwrap();
+    
+    // Act & Assert
+    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    cmd.arg("delete")
+        .arg("test-prompt")
+        .arg("--path")
+        .arg(temp_dir.path())
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Use --force to skip confirmation"));
+    
+    // Verify the file was NOT deleted
+    assert!(prompt_file.exists());
+}
+
+#[test]
+fn should_fail_when_deleting_nonexistent_prompt() {
+    // Arrange
+    let temp_dir = tempdir().unwrap();
+    
+    // Act & Assert
+    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    cmd.arg("delete")
+        .arg("nonexistent")
+        .arg("--force")
+        .arg("--path")
+        .arg(temp_dir.path())
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Prompt not found"));
+}
+
+#[test]
+fn should_copy_prompt_to_clipboard() {
+    // Arrange
+    let temp_dir = tempdir().unwrap();
+    let prompts_dir = temp_dir.path().join("jkms");
+    std::fs::create_dir(&prompts_dir).unwrap();
+    
+    let prompt_content = r#"---
+name: "Test Prompt"
+tags: ["test"]
+---
+# Test Content
+This is the prompt content to copy."#;
+    
+    std::fs::write(prompts_dir.join("test-prompt.md"), prompt_content).unwrap();
+    
+    // Act & Assert
+    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    cmd.arg("copy")
+        .arg("test-prompt")
+        .arg("--path")
+        .arg(temp_dir.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Copied to clipboard"));
+}
+
+#[test]
+fn should_fail_when_copying_nonexistent_prompt() {
+    // Arrange
+    let temp_dir = tempdir().unwrap();
+    
+    // Act & Assert
+    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    cmd.arg("copy")
+        .arg("nonexistent")
+        .arg("--path")
+        .arg(temp_dir.path())
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Prompt not found"));
+}

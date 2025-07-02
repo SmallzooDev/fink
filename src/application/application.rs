@@ -134,4 +134,33 @@ tags: []
         
         Ok(())
     }
+
+    fn delete_prompt(&self, name: &str, force: bool) -> Result<()> {
+        // Find the prompt
+        let metadata = self.repository.find_by_name(name)?
+            .ok_or_else(|| anyhow::anyhow!("Prompt not found: {}", name))?;
+        
+        // If not forced, we would normally ask for confirmation here
+        // For now, we'll implement the force flag behavior
+        if !force {
+            // In a real implementation, we would prompt for confirmation
+            // For CLI testing, we'll skip this for now
+            return Err(anyhow::anyhow!("Deletion cancelled. Use --force to skip confirmation."));
+        }
+        
+        // Delete the prompt
+        self.repository.delete_prompt(&metadata.file_path)?;
+        
+        Ok(())
+    }
+
+    fn copy_prompt(&self, name: &str) -> Result<()> {
+        // Get the prompt content
+        let (_, content) = self.get_prompt(name)?;
+        
+        // Copy to clipboard
+        self.copy_to_clipboard(&content)?;
+        
+        Ok(())
+    }
 }
