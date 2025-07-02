@@ -12,6 +12,7 @@ pub trait PromptRepository {
     fn create_prompt(&self, name: &str, content: &str) -> Result<()>;
     fn prompt_exists(&self, name: &str) -> bool;
     fn get_template_content(&self, template_name: &str) -> Result<String>;
+    fn get_base_path(&self) -> &std::path::Path;
 }
 
 /// Adapter to use FileSystem as a PromptRepository
@@ -137,5 +138,9 @@ impl PromptRepository for FileSystemRepository {
     fn get_template_content(&self, template_name: &str) -> Result<String> {
         let template_path = Path::new("templates").join(format!("{}.md", template_name));
         self.storage.read_to_string(&template_path)
+    }
+
+    fn get_base_path(&self) -> &std::path::Path {
+        self.storage.base_path()
     }
 }

@@ -107,4 +107,31 @@ tags: []
         self.repository.create_prompt(&normalized_name, &content)?;
         Ok(())
     }
+
+    fn edit_prompt(&self, name: &str) -> Result<()> {
+        // Find the prompt
+        let metadata = self.repository.find_by_name(name)?
+            .ok_or_else(|| anyhow::anyhow!("Prompt not found: {}", name))?;
+        
+        // Get the file path
+        let file_path = std::path::Path::new(&self.repository.get_base_path())
+            .join("jkms")
+            .join(&metadata.file_path);
+        
+        // Get editor from environment variable
+        let editor = std::env::var("EDITOR")
+            .or_else(|_| std::env::var("VISUAL"))
+            .unwrap_or_else(|_| "vim".to_string());
+        
+        // Launch the editor
+        let status = std::process::Command::new(&editor)
+            .arg(&file_path)
+            .status()?;
+        
+        if !status.success() {
+            return Err(anyhow::anyhow!("Editor exited with non-zero status"));
+        }
+        
+        Ok(())
+    }
 }

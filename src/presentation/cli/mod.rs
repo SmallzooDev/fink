@@ -21,6 +21,11 @@ pub enum Commands {
         #[arg(short, long)]
         template: Option<String>,
     },
+    /// Edit an existing prompt
+    Edit {
+        /// Name of the prompt to edit
+        name: String,
+    },
 }
 
 
@@ -59,6 +64,15 @@ pub fn execute_command(command: Commands, base_path: PathBuf) -> Result<()> {
         }
         Commands::Create { name, template } => {
             match application.create_prompt(&name, template.as_deref()) {
+                Ok(()) => Ok(()),
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                    std::process::exit(1);
+                }
+            }
+        }
+        Commands::Edit { name } => {
+            match application.edit_prompt(&name) {
                 Ok(()) => Ok(()),
                 Err(e) => {
                     eprintln!("Error: {}", e);

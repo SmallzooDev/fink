@@ -200,3 +200,66 @@ fn should_fail_when_template_not_found() {
         .failure()
         .stderr(predicate::str::contains("Unknown template"));
 }
+
+#[test]
+fn should_edit_prompt_with_external_editor() {
+    // Arrange
+    let temp_dir = tempdir().unwrap();
+    let prompts_dir = temp_dir.path().join("jkms");
+    std::fs::create_dir(&prompts_dir).unwrap();
+    
+    let original_content = r#"---
+name: "Test Prompt"
+tags: ["test"]
+---
+# Original Content"#;
+    
+    std::fs::write(prompts_dir.join("test-prompt.md"), original_content).unwrap();
+    
+    // Create a mock editor script that modifies the file
+    let mock_editor_path = temp_dir.path().join("mock_editor.sh");
+    let mock_editor_content = r#"#!/bin/bash
+echo '---
+name: "Test Prompt"
+tags: ["test", "edited"]
+---
+# Edited Content' > "$1""#;
+    
+    std::fs::write(&mock_editor_path, mock_editor_content).unwrap();
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&mock_editor_path, std::fs::Permissions::from_mode(0o755)).unwrap();
+    }
+    
+    // Act & Assert
+    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    cmd.arg("edit")
+        .arg("test-prompt")
+        .arg("--path")
+        .arg(temp_dir.path())
+        .env("EDITOR", mock_editor_path.to_str().unwrap())
+        .assert()
+        .success();
+    
+    // Verify the file was edited
+    let edited_content = std::fs::read_to_string(prompts_dir.join("test-prompt.md")).unwrap();
+    assert!(edited_content.contains("Edited Content"));
+    assert!(edited_content.contains("edited"));
+}
+
+#[test]
+fn should_fail_when_editing_nonexistent_prompt() {
+    // Arrange
+    let temp_dir = tempdir().unwrap();
+    
+    // Act & Assert
+    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    cmd.arg("edit")
+        .arg("nonexistent")
+        .arg("--path")
+        .arg(temp_dir.path())
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Prompt not found"));
+}
