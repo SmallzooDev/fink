@@ -383,3 +383,106 @@ fn should_fail_when_copying_nonexistent_prompt() {
         .failure()
         .stderr(predicate::str::contains("Prompt not found"));
 }
+
+#[test]
+fn should_search_prompts_by_name() {
+    // Arrange
+    let temp_dir = tempdir().unwrap();
+    let prompts_dir = temp_dir.path().join("jkms");
+    std::fs::create_dir(&prompts_dir).unwrap();
+    
+    let prompt1 = r#"---
+name: "Code Review Assistant"
+tags: ["code", "review"]
+---
+# Code Review"#;
+    
+    let prompt2 = r#"---
+name: "Bug Analysis"
+tags: ["debug", "analysis"]
+---
+# Bug Analysis"#;
+    
+    let prompt3 = r#"---
+name: "Documentation Helper"
+tags: ["docs", "writing"]
+---
+# Documentation"#;
+    
+    std::fs::write(prompts_dir.join("code-review.md"), prompt1).unwrap();
+    std::fs::write(prompts_dir.join("bug-analysis.md"), prompt2).unwrap();
+    std::fs::write(prompts_dir.join("documentation.md"), prompt3).unwrap();
+    
+    // Act & Assert
+    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    cmd.arg("search")
+        .arg("review")
+        .arg("--path")
+        .arg(temp_dir.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Code Review Assistant"))
+        .stdout(predicate::str::contains("[code, review]"))
+        .stdout(predicate::str::contains("Bug Analysis").not())
+        .stdout(predicate::str::contains("Documentation Helper").not());
+}
+
+#[test]
+fn should_search_prompts_by_tag() {
+    // Arrange
+    let temp_dir = tempdir().unwrap();
+    let prompts_dir = temp_dir.path().join("jkms");
+    std::fs::create_dir(&prompts_dir).unwrap();
+    
+    let prompt1 = r#"---
+name: "Code Review"
+tags: ["code", "review"]
+---
+# Code Review"#;
+    
+    let prompt2 = r#"---
+name: "Bug Report"
+tags: ["bug", "code"]
+---
+# Bug Report"#;
+    
+    std::fs::write(prompts_dir.join("code-review.md"), prompt1).unwrap();
+    std::fs::write(prompts_dir.join("bug-report.md"), prompt2).unwrap();
+    
+    // Act & Assert
+    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    cmd.arg("search")
+        .arg("code")
+        .arg("--path")
+        .arg(temp_dir.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Code Review"))
+        .stdout(predicate::str::contains("Bug Report"));
+}
+
+#[test]
+fn should_show_message_when_no_search_results() {
+    // Arrange
+    let temp_dir = tempdir().unwrap();
+    let prompts_dir = temp_dir.path().join("jkms");
+    std::fs::create_dir(&prompts_dir).unwrap();
+    
+    let prompt = r#"---
+name: "Test Prompt"
+tags: ["test"]
+---
+# Test"#;
+    
+    std::fs::write(prompts_dir.join("test.md"), prompt).unwrap();
+    
+    // Act & Assert
+    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    cmd.arg("search")
+        .arg("nonexistent")
+        .arg("--path")
+        .arg(temp_dir.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("No prompts found matching"));
+}

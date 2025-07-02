@@ -39,6 +39,11 @@ pub enum Commands {
         /// Name of the prompt to copy
         name: String,
     },
+    /// Search for prompts
+    Search {
+        /// Search query
+        query: String,
+    },
 }
 
 
@@ -113,6 +118,24 @@ pub fn execute_command(command: Commands, base_path: PathBuf) -> Result<()> {
                     std::process::exit(1);
                 }
             }
+        }
+        Commands::Search { query } => {
+            use crate::application::models::SearchType;
+            let results = application.search_prompts(&query, SearchType::All)?;
+            
+            if results.is_empty() {
+                println!("No prompts found matching '{}'", query);
+            } else {
+                for prompt in results {
+                    let tags_str = if prompt.tags.is_empty() {
+                        String::new()
+                    } else {
+                        format!(" [{}]", prompt.tags.join(", "))
+                    };
+                    println!("{}{}", prompt.name, tags_str);
+                }
+            }
+            Ok(())
         }
     }
 }
