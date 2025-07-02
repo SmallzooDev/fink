@@ -1,11 +1,6 @@
 use anyhow::Result;
 use std::path::{Path, PathBuf};
-
-#[derive(Clone)]
-pub struct Prompt {
-    pub name: String,
-    pub file_path: String,
-}
+use crate::application::models::PromptMetadata;
 
 pub struct FileSystem {
     base_path: PathBuf,
@@ -46,7 +41,7 @@ impl FileSystem {
         self.base_path.join(relative_path)
     }
 
-    pub fn list_prompts(&self) -> Result<Vec<Prompt>> {
+    pub fn list_prompts(&self) -> Result<Vec<PromptMetadata>> {
         let prompts_dir = self.base_path.join("jkms");
         let mut prompts = Vec::new();
 
@@ -57,23 +52,20 @@ impl FileSystem {
 
                 if path.extension().and_then(|s| s.to_str()) == Some("md") {
                     let content = std::fs::read_to_string(&path)?;
-
-                    // Simple parsing to get the name from frontmatter
                     let file_name = path.file_name().and_then(|s| s.to_str()).unwrap_or("");
-                    if let Some(name) = extract_name_from_content(&content) {
-                        prompts.push(Prompt {
-                            name,
-                            file_path: file_name.to_string(),
-                        });
-                    } else {
-                        // Use filename as fallback
-                        if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
-                            prompts.push(Prompt {
-                                name: stem.to_string(),
-                                file_path: file_name.to_string(),
-                            });
-                        }
-                    }
+                    
+                    // Extract metadata from content
+                    let name = extract_name_from_content(&content)
+                        .or_else(|| path.file_stem().and_then(|s| s.to_str()).map(|s| s.to_string()))
+                        .unwrap_or_else(|| file_name.to_string());
+                    
+                    let tags = extract_tags_from_content(&content);
+                    
+                    prompts.push(PromptMetadata {
+                        name,
+                        file_path: file_name.to_string(),
+                        tags,
+                    });
                 }
             }
         }
@@ -102,4 +94,30 @@ fn extract_name_from_content(content: &str) -> Option<String> {
         }
     }
     None
+}
+
+fn extract_tags_from_content(content: &str) -> Vec<String> {
+    if let Some(start) = content.find("---") {
+        if let Some(end) = content[start + 3..].find("---") {
+            let frontmatter = &content[start + 3..start + 3 + end];
+            
+            // Look for tags line
+            for line in frontmatter.lines() {
+                if line.trim().starts_with("tags:") {
+                    let tags_part = line.trim_start_matches("tags:").trim();
+                    
+                    // Parse array format [tag1, tag2]
+                    if tags_part.starts_with('[') && tags_part.ends_with(']') {
+                        let tags_str = &tags_part[1..tags_part.len() - 1];
+                        return tags_str
+                            .split(',')
+                            .map(|s| s.trim().trim_matches('"').to_string())
+                            .filter(|s| !s.is_empty())
+                            .collect();
+                    }
+                }
+            }
+        }
+    }
+    Vec::new()
 }

@@ -44,14 +44,7 @@ impl TUIApp {
     pub fn new_with_mode(base_path: PathBuf, mode: AppMode) -> Result<Self> {
         let application = DefaultPromptApplication::new(base_path)?;
         let prompts_metadata = application.list_prompts(None)?;
-        
-        // Convert metadata to storage format for compatibility
-        let prompts = prompts_metadata.iter().map(|m| crate::storage::Prompt {
-            name: m.name.clone(),
-            file_path: m.file_path.clone(),
-        }).collect();
-        
-        let prompt_list = PromptList::new(prompts);
+        let prompt_list = PromptList::new(prompts_metadata);
 
         Ok(Self {
             mode,
@@ -96,7 +89,7 @@ impl TUIApp {
         })
     }
 
-    pub fn get_prompts(&self) -> &Vec<crate::storage::Prompt> {
+    pub fn get_prompts(&self) -> &Vec<crate::application::models::PromptMetadata> {
         self.prompt_list.prompts()
     }
 
@@ -173,14 +166,7 @@ impl TUIApp {
 
     fn reload_prompts(&mut self) -> Result<()> {
         let prompts_metadata = self.application.list_prompts(None)?;
-        
-        // Convert metadata to storage format for compatibility
-        let prompts = prompts_metadata.iter().map(|m| crate::storage::Prompt {
-            name: m.name.clone(),
-            file_path: m.file_path.clone(),
-        }).collect();
-        
-        self.prompt_list = PromptList::new(prompts);
+        self.prompt_list = PromptList::new(prompts_metadata);
         Ok(())
     }
 

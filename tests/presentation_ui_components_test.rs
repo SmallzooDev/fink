@@ -1,17 +1,19 @@
-use jkms::storage::Prompt;
+use jkms::application::models::PromptMetadata;
 use jkms::presentation::tui::components::PromptList;
 
 #[test]
 fn should_create_prompt_list_component() {
     // Arrange
     let prompts = vec![
-        Prompt {
+        PromptMetadata {
             name: "Code Review".to_string(),
             file_path: "code-review.md".to_string(),
+            tags: vec![],
         },
-        Prompt {
+        PromptMetadata {
             name: "Bug Analysis".to_string(),
             file_path: "bug-analysis.md".to_string(),
+            tags: vec![],
         },
     ];
 
@@ -27,17 +29,20 @@ fn should_create_prompt_list_component() {
 fn should_navigate_prompt_list() {
     // Arrange
     let prompts = vec![
-        Prompt {
+        PromptMetadata {
             name: "Code Review".to_string(),
             file_path: "code-review.md".to_string(),
+            tags: vec![],
         },
-        Prompt {
+        PromptMetadata {
             name: "Bug Analysis".to_string(),
             file_path: "bug-analysis.md".to_string(),
+            tags: vec![],
         },
-        Prompt {
+        PromptMetadata {
             name: "Documentation".to_string(),
             file_path: "documentation.md".to_string(),
+            tags: vec![],
         },
     ];
     let mut prompt_list = PromptList::new(prompts);
@@ -60,13 +65,15 @@ fn should_navigate_prompt_list() {
 fn should_handle_previous_navigation() {
     // Arrange
     let prompts = vec![
-        Prompt {
+        PromptMetadata {
             name: "Code Review".to_string(),
             file_path: "code-review.md".to_string(),
+            tags: vec![],
         },
-        Prompt {
+        PromptMetadata {
             name: "Bug Analysis".to_string(),
             file_path: "bug-analysis.md".to_string(),
+            tags: vec![],
         },
     ];
     let mut prompt_list = PromptList::new(prompts);
@@ -82,13 +89,15 @@ fn should_handle_previous_navigation() {
 fn should_get_selected_prompt() {
     // Arrange
     let prompts = vec![
-        Prompt {
+        PromptMetadata {
             name: "Code Review".to_string(),
             file_path: "code-review.md".to_string(),
+            tags: vec![],
         },
-        Prompt {
+        PromptMetadata {
             name: "Bug Analysis".to_string(),
             file_path: "bug-analysis.md".to_string(),
+            tags: vec![],
         },
     ];
     let mut prompt_list = PromptList::new(prompts);

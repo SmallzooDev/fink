@@ -1,12 +1,12 @@
-use crate::storage::Prompt;
+use crate::application::models::PromptMetadata;
 
 pub struct PromptList {
-    prompts: Vec<Prompt>,
+    prompts: Vec<PromptMetadata>,
     selected: usize,
 }
 
 impl PromptList {
-    pub fn new(prompts: Vec<Prompt>) -> Self {
+    pub fn new(prompts: Vec<PromptMetadata>) -> Self {
         Self {
             prompts,
             selected: 0,
@@ -43,11 +43,11 @@ impl PromptList {
         }
     }
 
-    pub fn get_selected(&self) -> Option<&Prompt> {
+    pub fn get_selected(&self) -> Option<&PromptMetadata> {
         self.prompts.get(self.selected)
     }
 
-    pub fn prompts(&self) -> &Vec<Prompt> {
+    pub fn prompts(&self) -> &Vec<PromptMetadata> {
         &self.prompts
     }
 }
