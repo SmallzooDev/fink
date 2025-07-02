@@ -12,6 +12,14 @@ pub enum Commands {
         /// Name of the prompt
         name: String,
     },
+    /// Create a new prompt
+    Create {
+        /// Name of the prompt
+        name: String,
+        /// Template to use for the prompt
+        #[arg(short, long)]
+        template: Option<String>,
+    },
 }
 
 
@@ -63,6 +71,71 @@ pub fn execute_command(command: Commands, base_path: PathBuf) -> Result<()> {
                 eprintln!("Prompt not found: {}", name);
                 std::process::exit(1);
             }
+        }
+        Commands::Create { name, template } => {
+            let prompts_dir = base_path.join("jkms");
+            
+            // Ensure the prompts directory exists
+            std::fs::create_dir_all(&prompts_dir)?;
+            
+            // Create the filename from the name
+            let filename = format!("{}.md", name.to_lowercase().replace(' ', "-"));
+            let file_path = prompts_dir.join(&filename);
+            
+            // Check if file already exists
+            if file_path.exists() {
+                eprintln!("Error: Prompt '{}' already exists", name);
+                std::process::exit(1);
+            }
+            
+            let content = if let Some(template_name) = template {
+                match template_name.as_str() {
+                    "basic" => {
+                        // TODO: In the future, this will open an external editor with the template
+                        // For now, we'll just create the file with the template content
+                        format!(r#"---
+name: "{}"
+tags: []
+---
+# {}
+
+# Instruction
+(a specific task or instruction you want the model to perform)
+Please input your prompt's instruction in here!
+
+# Context
+(external information or additional context that can steer the model to better responses)
+Please input your prompt's context in here!
+
+# Input Data
+(the input or question that we are interested to find a response for)
+Please input your prompt's input data in here!
+
+# Output Indicator
+(the type or format of the output)
+Please input your prompt's output indicator here!
+"#, name, name)
+                    }
+                    _ => {
+                        eprintln!("Error: Unknown template: {}", template_name);
+                        std::process::exit(1);
+                    }
+                }
+            } else {
+                // Create the default content
+                format!(r#"---
+name: "{}"
+tags: []
+---
+# {}
+
+"#, name, name)
+            };
+            
+            // Write the file
+            std::fs::write(&file_path, content)?;
+            
+            Ok(())
         }
     }
 }

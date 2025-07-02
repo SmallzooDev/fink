@@ -98,3 +98,105 @@ fn should_handle_nonexistent_prompt() {
         .failure()
         .stderr(predicate::str::contains("Prompt not found"));
 }
+
+#[test]
+fn should_create_new_prompt_with_create_command() {
+    // Arrange
+    let temp_dir = tempdir().unwrap();
+    let prompts_dir = temp_dir.path().join("jkms");
+    std::fs::create_dir(&prompts_dir).unwrap();
+
+    // Act & Assert
+    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    cmd.arg("create")
+        .arg("test-prompt")
+        .arg("--path")
+        .arg(temp_dir.path())
+        .assert()
+        .success();
+
+    // Verify the file was created
+    let created_file = prompts_dir.join("test-prompt.md");
+    assert!(created_file.exists());
+
+    // Verify the content
+    let content = std::fs::read_to_string(&created_file).unwrap();
+    assert!(content.contains("name: \"test-prompt\""));
+}
+
+#[test]
+fn should_create_prompt_with_template() {
+    // Arrange
+    let temp_dir = tempdir().unwrap();
+    let prompts_dir = temp_dir.path().join("jkms");
+    std::fs::create_dir(&prompts_dir).unwrap();
+
+    // Act & Assert
+    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    cmd.arg("create")
+        .arg("new-prompt")
+        .arg("--template")
+        .arg("basic")
+        .arg("--path")
+        .arg(temp_dir.path())
+        .assert()
+        .success();
+
+    // Verify the file was created
+    let created_file = prompts_dir.join("new-prompt.md");
+    assert!(created_file.exists());
+
+    // Verify the content has the template guide
+    let content = std::fs::read_to_string(&created_file).unwrap();
+    assert!(content.contains("name: \"new-prompt\""));
+    assert!(content.contains("# Instruction"));
+    assert!(content.contains("# Context"));
+    assert!(content.contains("# Input Data"));
+    assert!(content.contains("# Output Indicator"));
+}
+
+#[test]
+fn should_fail_when_creating_duplicate_prompt() {
+    // Arrange
+    let temp_dir = tempdir().unwrap();
+    let prompts_dir = temp_dir.path().join("jkms");
+    std::fs::create_dir(&prompts_dir).unwrap();
+    
+    // Create an existing prompt
+    let existing_content = r#"---
+name: "existing"
+tags: []
+---
+# Existing"#;
+    std::fs::write(prompts_dir.join("existing.md"), existing_content).unwrap();
+
+    // Act & Assert
+    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    cmd.arg("create")
+        .arg("existing")
+        .arg("--path")
+        .arg(temp_dir.path())
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("already exists"));
+}
+
+#[test]
+fn should_fail_when_template_not_found() {
+    // Arrange
+    let temp_dir = tempdir().unwrap();
+    let prompts_dir = temp_dir.path().join("jkms");
+    std::fs::create_dir(&prompts_dir).unwrap();
+
+    // Act & Assert
+    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    cmd.arg("create")
+        .arg("new-prompt")
+        .arg("--template")
+        .arg("invalid-template")
+        .arg("--path")
+        .arg(temp_dir.path())
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Unknown template"));
+}
