@@ -192,3 +192,44 @@ It should appear in the preview pane."#;
     assert!(content.contains("This is content shown in quick select mode"));
     assert!(content.contains("It should appear in the preview pane"));
 }
+
+#[test]
+fn should_render_confirmation_dialog() {
+    // Arrange
+    let temp_dir = tempdir().unwrap();
+    let prompts_dir = temp_dir.path().join("jkms");
+    std::fs::create_dir(&prompts_dir).unwrap();
+
+    let content = r#"---
+name: "Test Prompt"
+tags: ["test"]
+---
+# Test Prompt
+Content to delete."#;
+
+    std::fs::write(prompts_dir.join("test.md"), content).unwrap();
+
+    let backend = TestBackend::new(80, 20);
+    let mut terminal = Terminal::new(backend).unwrap();
+
+    // Create App instance in Management mode with confirmation dialog
+    let mut app = TUIApp::new_with_mode(temp_dir.path().to_path_buf(), AppMode::Management).unwrap();
+    app.show_delete_confirmation();
+
+    // Act
+    terminal
+        .draw(|f| {
+            let screen = QuickSelectScreen::new(&app);
+            screen.render(f, f.size());
+        })
+        .unwrap();
+
+    // Assert
+    let buffer = terminal.backend().buffer();
+    let content = buffer_to_string(buffer);
+
+    // Should show confirmation dialog
+    assert!(content.contains("Are you sure you want to delete 'Test Prompt'?"));
+    assert!(content.contains("[Y]es") || content.contains("(Y)es"));
+    assert!(content.contains("[N]o") || content.contains("(N)o"));
+}

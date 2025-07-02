@@ -45,6 +45,21 @@ impl Default for EventHandler {
 impl EventHandler {
     pub fn handle_event(&self, app: &mut TUIApp, event: Event) -> Result<()> {
         if let Event::Key(key) = event {
+            // Handle confirmation dialog first if showing
+            if app.is_showing_confirmation() {
+                match key.code {
+                    KeyCode::Char('y') | KeyCode::Char('Y') => {
+                        app.confirm_action()?;
+                    }
+                    KeyCode::Char('n') | KeyCode::Char('N') | KeyCode::Esc => {
+                        app.cancel_confirmation();
+                    }
+                    _ => {} // Ignore other keys while confirmation dialog is showing
+                }
+                return Ok(());
+            }
+
+            // Normal key handling
             match key.code {
                 KeyCode::Esc | KeyCode::Char('q') => {
                     app.quit();
@@ -75,10 +90,7 @@ impl EventHandler {
                 }
                 KeyCode::Char('d') => {
                     if matches!(app.mode(), AppMode::Management) {
-                        if let Err(e) = app.delete_selected() {
-                            // TODO: Show error in UI
-                            eprintln!("Error deleting prompt: {}", e);
-                        }
+                        app.show_delete_confirmation();
                     }
                 }
                 KeyCode::Char('n') => {

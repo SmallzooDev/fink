@@ -16,12 +16,24 @@ pub enum PendingAction {
     Edit,
 }
 
+#[derive(Debug, PartialEq)]
+pub struct ConfirmationDialog {
+    pub message: String,
+    pub action: ConfirmationAction,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum ConfirmationAction {
+    Delete(String), // prompt name
+}
+
 pub struct TUIApp {
     mode: AppMode,
     should_quit: bool,
     prompt_list: PromptList,
     application: DefaultPromptApplication,
     pending_action: Option<PendingAction>,
+    confirmation_dialog: Option<ConfirmationDialog>,
 }
 
 impl TUIApp {
@@ -47,6 +59,7 @@ impl TUIApp {
             prompt_list,
             application,
             pending_action: None,
+            confirmation_dialog: None,
         })
     }
 
@@ -140,16 +153,10 @@ impl TUIApp {
     }
 
     pub fn delete_selected(&mut self) -> Result<()> {
-        if let Some(prompt) = self.prompt_list.get_selected() {
-            self.application.delete_prompt(&prompt.name, true)?;
-            
-            // Reload prompts after deletion
-            self.reload_prompts()?;
-            
-            Ok(())
-        } else {
-            Err(anyhow::anyhow!("No prompt selected"))
-        }
+        // This method is now deprecated in favor of show_delete_confirmation
+        // But we'll keep it for backward compatibility
+        self.show_delete_confirmation();
+        Ok(())
     }
 
     pub fn create_new_prompt(&mut self) -> Result<()> {
@@ -187,5 +194,38 @@ impl TUIApp {
 
     pub fn take_pending_action(&mut self) -> Option<PendingAction> {
         self.pending_action.take()
+    }
+
+    pub fn is_showing_confirmation(&self) -> bool {
+        self.confirmation_dialog.is_some()
+    }
+
+    pub fn get_confirmation_message(&self) -> Option<String> {
+        self.confirmation_dialog.as_ref().map(|d| d.message.clone())
+    }
+
+    pub fn show_delete_confirmation(&mut self) {
+        if let Some(prompt) = self.prompt_list.get_selected() {
+            self.confirmation_dialog = Some(ConfirmationDialog {
+                message: format!("Are you sure you want to delete '{}'?", prompt.name),
+                action: ConfirmationAction::Delete(prompt.name.clone()),
+            });
+        }
+    }
+
+    pub fn cancel_confirmation(&mut self) {
+        self.confirmation_dialog = None;
+    }
+
+    pub fn confirm_action(&mut self) -> Result<()> {
+        if let Some(dialog) = self.confirmation_dialog.take() {
+            match dialog.action {
+                ConfirmationAction::Delete(name) => {
+                    self.application.delete_prompt(&name, true)?;
+                    self.reload_prompts()?;
+                }
+            }
+        }
+        Ok(())
     }
 }

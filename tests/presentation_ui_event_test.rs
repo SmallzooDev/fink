@@ -200,3 +200,100 @@ fn should_not_handle_management_keys_in_quick_select_mode() {
     assert_eq!(app.selected_index(), initial_state);
     assert!(!app.should_quit());
 }
+
+#[test]
+fn should_show_confirmation_dialog_on_delete() {
+    // Arrange
+    let temp_dir = tempdir().unwrap();
+    let prompts_dir = temp_dir.path().join("jkms");
+    std::fs::create_dir(&prompts_dir).unwrap();
+    
+    let content = r#"---
+name: "Test Prompt"
+---
+# Test Content"#;
+    
+    std::fs::write(prompts_dir.join("test.md"), content).unwrap();
+    
+    let mut app = TUIApp::new_with_mode(temp_dir.path().to_path_buf(), AppMode::Management).unwrap();
+    let handler = EventHandler::new();
+    
+    // Act - press 'd' to initiate delete
+    let d_event = Event::Key(KeyEvent::new(KeyCode::Char('d'), KeyModifiers::empty()));
+    let result = handler.handle_event(&mut app, d_event);
+    
+    // Assert
+    assert!(result.is_ok());
+    assert!(app.is_showing_confirmation());
+    assert_eq!(app.get_confirmation_message().unwrap(), "Are you sure you want to delete 'Test Prompt'?");
+    
+    // File should still exist
+    assert!(prompts_dir.join("test.md").exists());
+}
+
+#[test]
+fn should_cancel_delete_on_escape_in_confirmation() {
+    // Arrange
+    let temp_dir = tempdir().unwrap();
+    let prompts_dir = temp_dir.path().join("jkms");
+    std::fs::create_dir(&prompts_dir).unwrap();
+    
+    let content = r#"---
+name: "Test Prompt"
+---
+# Test Content"#;
+    
+    std::fs::write(prompts_dir.join("test.md"), content).unwrap();
+    
+    let mut app = TUIApp::new_with_mode(temp_dir.path().to_path_buf(), AppMode::Management).unwrap();
+    let handler = EventHandler::new();
+    
+    // First show the confirmation dialog
+    let d_event = Event::Key(KeyEvent::new(KeyCode::Char('d'), KeyModifiers::empty()));
+    handler.handle_event(&mut app, d_event).unwrap();
+    
+    // Act - press ESC to cancel
+    let esc_event = Event::Key(KeyEvent::new(KeyCode::Esc, KeyModifiers::empty()));
+    let result = handler.handle_event(&mut app, esc_event);
+    
+    // Assert
+    assert!(result.is_ok());
+    assert!(!app.is_showing_confirmation());
+    assert!(!app.should_quit()); // Should not quit the app
+    
+    // File should still exist
+    assert!(prompts_dir.join("test.md").exists());
+}
+
+#[test]
+fn should_confirm_delete_on_y_key() {
+    // Arrange
+    let temp_dir = tempdir().unwrap();
+    let prompts_dir = temp_dir.path().join("jkms");
+    std::fs::create_dir(&prompts_dir).unwrap();
+    
+    let content = r#"---
+name: "Test Prompt"
+---
+# Test Content"#;
+    
+    std::fs::write(prompts_dir.join("test.md"), content).unwrap();
+    
+    let mut app = TUIApp::new_with_mode(temp_dir.path().to_path_buf(), AppMode::Management).unwrap();
+    let handler = EventHandler::new();
+    
+    // First show the confirmation dialog
+    let d_event = Event::Key(KeyEvent::new(KeyCode::Char('d'), KeyModifiers::empty()));
+    handler.handle_event(&mut app, d_event).unwrap();
+    
+    // Act - press 'y' to confirm
+    let y_event = Event::Key(KeyEvent::new(KeyCode::Char('y'), KeyModifiers::empty()));
+    let result = handler.handle_event(&mut app, y_event);
+    
+    // Assert
+    assert!(result.is_ok());
+    assert!(!app.is_showing_confirmation());
+    
+    // File should be deleted
+    assert!(!prompts_dir.join("test.md").exists());
+}
