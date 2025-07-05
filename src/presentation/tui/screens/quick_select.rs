@@ -75,8 +75,8 @@ impl<'a> QuickSelectScreen<'a> {
             "Type to search  Enter: Select  Esc: Cancel search"
         } else {
             match self.app.mode() {
-                AppMode::QuickSelect => "↑↓: Navigate  Enter: Copy  /: Search  m: Manage  Esc: Exit",
-                AppMode::Management => "↑↓: Navigate  e: Edit  d: Delete  n: New  /: Search  m: Quick  Esc: Exit",
+                AppMode::QuickSelect => "↑↓: Navigate  Enter: Copy  /: Search  f: Filter  m: Manage  Esc: Exit",
+                AppMode::Management => "↑↓: Navigate  e: Edit  d: Delete  n: New  t: Tags  f: Filter  /: Search  m: Quick  Esc: Exit",
             }
         };
         let footer = Paragraph::new(footer_text)
@@ -88,10 +88,20 @@ impl<'a> QuickSelectScreen<'a> {
         if let Some(dialog) = self.app.get_confirmation_dialog() {
             dialog.render(f, area);
         }
+        
+        // Render tag management dialog if showing
+        if let Some(tag_dialog) = self.app.get_tag_dialog() {
+            tag_dialog.render(f, area);
+        }
+        
+        // Render tag filter dialog if showing
+        if let Some(filter_dialog) = self.app.get_tag_filter_dialog() {
+            filter_dialog.render(f, area);
+        }
     }
 
     fn render_prompt_list(&self, f: &mut Frame, area: Rect) {
-        let prompts = if self.app.is_search_active() {
+        let prompts = if self.app.is_search_active() || self.app.is_tag_filter_active() {
             self.app.get_filtered_prompts()
         } else {
             self.app.get_prompts().clone()
@@ -127,7 +137,9 @@ impl<'a> QuickSelectScreen<'a> {
             })
             .collect();
 
-        let title = if self.app.is_search_active() && !self.app.get_search_query().is_empty() {
+        let title = if let Some(tag_filter) = self.app.get_active_tag_filter() {
+            format!("Prompts (tag: {}) - {} results", tag_filter, prompts.len())
+        } else if self.app.is_search_active() && !self.app.get_search_query().is_empty() {
             format!("Prompts (filtered: {})", prompts.len())
         } else {
             "Prompts".to_string()

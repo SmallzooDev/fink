@@ -1,6 +1,6 @@
 use crate::application::application::DefaultPromptApplication;
 use crate::application::traits::PromptApplication;
-use crate::presentation::tui::components::{PromptList, confirmation_dialog::{ConfirmationDialog as Dialog, ConfirmationAction}};
+use crate::presentation::tui::components::{PromptList, confirmation_dialog::{ConfirmationDialog as Dialog, ConfirmationAction}, TagManagementDialog, TagFilterDialog};
 use anyhow::Result;
 use ratatui::widgets::ListState;
 use std::path::PathBuf;
@@ -27,6 +27,10 @@ pub struct TUIApp {
     search_query: String,
     tag_filter_active: bool,
     active_tag_filter: Option<String>,
+    tag_management_active: bool,
+    pub tag_dialog: Option<TagManagementDialog>,
+    tag_filter_dialog_active: bool,
+    pub tag_filter_dialog: Option<TagFilterDialog>,
 }
 
 impl TUIApp {
@@ -50,6 +54,10 @@ impl TUIApp {
             search_query: String::new(),
             tag_filter_active: false,
             active_tag_filter: None,
+            tag_management_active: false,
+            tag_dialog: None,
+            tag_filter_dialog_active: false,
+            tag_filter_dialog: None,
         })
     }
 
@@ -287,5 +295,109 @@ impl TUIApp {
         let mut sorted_tags: Vec<String> = tags.into_iter().collect();
         sorted_tags.sort();
         sorted_tags
+    }
+    
+    // Tag management methods
+    pub fn add_tag_to_selected(&mut self, tag: &str) -> Result<()> {
+        if let Some(prompt) = self.prompt_list.get_selected() {
+            let mut tags = prompt.tags.clone();
+            
+            // Check if tag already exists
+            if tags.contains(&tag.to_string()) {
+                return Err(anyhow::anyhow!("Tag '{}' already exists", tag));
+            }
+            
+            // Add the new tag
+            tags.push(tag.to_string());
+            
+            // Update the prompt with new tags
+            self.application.update_prompt_tags(&prompt.name, tags)?;
+            
+            // Reload prompts to reflect changes
+            self.reload_prompts()?;
+            
+            Ok(())
+        } else {
+            Err(anyhow::anyhow!("No prompt selected"))
+        }
+    }
+    
+    pub fn remove_tag_from_selected(&mut self, tag: &str) -> Result<()> {
+        if let Some(prompt) = self.prompt_list.get_selected() {
+            let mut tags = prompt.tags.clone();
+            
+            // Check if tag exists
+            if !tags.contains(&tag.to_string()) {
+                return Err(anyhow::anyhow!("Tag '{}' not found", tag));
+            }
+            
+            // Remove the tag
+            tags.retain(|t| t != tag);
+            
+            // Update the prompt with new tags
+            self.application.update_prompt_tags(&prompt.name, tags)?;
+            
+            // Reload prompts to reflect changes
+            self.reload_prompts()?;
+            
+            Ok(())
+        } else {
+            Err(anyhow::anyhow!("No prompt selected"))
+        }
+    }
+    
+    pub fn open_tag_management(&mut self) {
+        let tags = self.get_selected_prompt_tags();
+        self.tag_dialog = Some(TagManagementDialog::new(tags));
+        self.tag_management_active = true;
+    }
+    
+    pub fn close_tag_management(&mut self) {
+        self.tag_dialog = None;
+        self.tag_management_active = false;
+    }
+    
+    pub fn get_tag_dialog(&self) -> Option<&TagManagementDialog> {
+        self.tag_dialog.as_ref()
+    }
+    
+    pub fn get_tag_dialog_mut(&mut self) -> Option<&mut TagManagementDialog> {
+        self.tag_dialog.as_mut()
+    }
+    
+    pub fn is_tag_management_active(&self) -> bool {
+        self.tag_management_active
+    }
+    
+    pub fn get_selected_prompt_tags(&self) -> Vec<String> {
+        if let Some(prompt) = self.prompt_list.get_selected() {
+            prompt.tags.clone()
+        } else {
+            Vec::new()
+        }
+    }
+    
+    // Tag filter dialog methods
+    pub fn open_tag_filter(&mut self) {
+        let all_tags = self.get_all_tags();
+        self.tag_filter_dialog = Some(TagFilterDialog::new(all_tags, self.active_tag_filter.clone()));
+        self.tag_filter_dialog_active = true;
+    }
+    
+    pub fn close_tag_filter(&mut self) {
+        self.tag_filter_dialog = None;
+        self.tag_filter_dialog_active = false;
+    }
+    
+    pub fn is_tag_filter_dialog_active(&self) -> bool {
+        self.tag_filter_dialog_active
+    }
+    
+    pub fn get_tag_filter_dialog(&self) -> Option<&TagFilterDialog> {
+        self.tag_filter_dialog.as_ref()
+    }
+    
+    pub fn get_tag_filter_dialog_mut(&mut self) -> Option<&mut TagFilterDialog> {
+        self.tag_filter_dialog.as_mut()
     }
 }

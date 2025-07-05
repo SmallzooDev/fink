@@ -167,4 +167,76 @@ tags: []
     fn get_base_path(&self) -> &std::path::Path {
         self.repository.get_base_path()
     }
+
+    fn update_prompt_tags(&self, name: &str, tags: Vec<String>) -> Result<()> {
+        // Find the prompt
+        let metadata = self.repository.find_by_name(name)
+            .map_err(|e| JkmsError::from(e))?
+            .ok_or_else(|| JkmsError::Prompt(PromptError::NotFound(name.to_string())))?;
+        
+        // Get the file path
+        let file_path = std::path::Path::new(&self.repository.get_base_path())
+            .join("jkms")
+            .join(&metadata.file_path);
+        
+        // Read the current content
+        let content = std::fs::read_to_string(&file_path)
+            .map_err(|e| JkmsError::Storage(crate::utils::error::StorageError::Io(e)))?;
+        
+        // Parse and update the frontmatter
+        let updated_content = if content.starts_with("---\n") {
+            let parts: Vec<&str> = content.splitn(3, "---\n").collect();
+            if parts.len() >= 3 {
+                // Parse existing frontmatter
+                let frontmatter = parts[1].to_string();
+                
+                // Update tags in frontmatter
+                let lines: Vec<&str> = frontmatter.lines().collect();
+                let mut new_lines = Vec::new();
+                let mut tags_updated = false;
+                
+                for line in lines {
+                    if line.starts_with("tags:") {
+                        new_lines.push(format!("tags: [{}]", 
+                            tags.iter()
+                                .map(|t| format!("\"{}\"", t))
+                                .collect::<Vec<_>>()
+                                .join(", ")
+                        ));
+                        tags_updated = true;
+                    } else {
+                        new_lines.push(line.to_string());
+                    }
+                }
+                
+                // If tags didn't exist, add them
+                if !tags_updated {
+                    new_lines.push(format!("tags: [{}]", 
+                        tags.iter()
+                            .map(|t| format!("\"{}\"", t))
+                            .collect::<Vec<_>>()
+                            .join(", ")
+                    ));
+                }
+                
+                format!("---\n{}\n---\n{}", new_lines.join("\n"), parts[2])
+            } else {
+                content
+            }
+        } else {
+            // No frontmatter, add it
+            format!("---\nname: \"{}\"\ntags: [{}]\n---\n{}", name, 
+                tags.iter()
+                    .map(|t| format!("\"{}\"", t))
+                    .collect::<Vec<_>>()
+                    .join(", "),
+                content)
+        };
+        
+        // Write the updated content back
+        std::fs::write(&file_path, updated_content)
+            .map_err(|e| JkmsError::Storage(crate::utils::error::StorageError::Io(e)))?;
+        
+        Ok(())
+    }
 }

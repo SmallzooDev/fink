@@ -58,6 +58,143 @@ impl EventHandler {
                 }
                 return Ok(());
             }
+            
+            // Handle tag filter dialog if showing
+            if app.is_tag_filter_dialog_active() {
+                let mut should_close = false;
+                let mut selected_tag = None;
+                let mut should_clear_filter = false;
+                
+                if let Some(filter_dialog) = app.get_tag_filter_dialog_mut() {
+                    match key.code {
+                        KeyCode::Esc => {
+                            should_close = true;
+                        }
+                        KeyCode::Up => {
+                            filter_dialog.move_up();
+                        }
+                        KeyCode::Down => {
+                            filter_dialog.move_down();
+                        }
+                        KeyCode::Enter => {
+                            selected_tag = filter_dialog.get_selected_tag().cloned();
+                            should_close = true;
+                        }
+                        KeyCode::Char('c') => {
+                            should_clear_filter = true;
+                            should_close = true;
+                        }
+                        _ => {}
+                    }
+                }
+                
+                if should_close {
+                    app.close_tag_filter();
+                }
+                
+                if let Some(tag) = selected_tag {
+                    app.set_tag_filter(&tag);
+                }
+                
+                if should_clear_filter {
+                    app.clear_tag_filter();
+                }
+                
+                return Ok(());
+            }
+            
+            // Handle tag management dialog if showing
+            if app.is_tag_management_active() {
+                use crate::presentation::tui::components::TagInputMode;
+                
+                let mut should_close = false;
+                let mut new_tag_to_add = None;
+                let mut tag_to_remove = None;
+                let mut should_refresh = false;
+                
+                // First, handle the dialog input
+                if let Some(tag_dialog) = app.get_tag_dialog_mut() {
+                    match tag_dialog.input_mode() {
+                        TagInputMode::ViewTags => {
+                            match key.code {
+                                KeyCode::Esc => {
+                                    should_close = true;
+                                }
+                                KeyCode::Char('a') => {
+                                    tag_dialog.start_adding_tag();
+                                }
+                                KeyCode::Char('r') => {
+                                    tag_dialog.start_removing_tag();
+                                }
+                                _ => {}
+                            }
+                        }
+                        TagInputMode::AddingTag => {
+                            match key.code {
+                                KeyCode::Esc => {
+                                    tag_dialog.cancel_input();
+                                }
+                                KeyCode::Enter => {
+                                    new_tag_to_add = tag_dialog.get_new_tag();
+                                    tag_dialog.cancel_input();
+                                    should_refresh = true;
+                                }
+                                KeyCode::Char(c) => {
+                                    tag_dialog.add_char(c);
+                                }
+                                KeyCode::Backspace => {
+                                    tag_dialog.delete_char();
+                                }
+                                _ => {}
+                            }
+                        }
+                        TagInputMode::RemovingTag => {
+                            match key.code {
+                                KeyCode::Esc => {
+                                    tag_dialog.cancel_input();
+                                }
+                                KeyCode::Up => {
+                                    tag_dialog.move_selection_up();
+                                }
+                                KeyCode::Down => {
+                                    tag_dialog.move_selection_down();
+                                }
+                                KeyCode::Enter => {
+                                    tag_to_remove = tag_dialog.get_selected_tag_for_removal();
+                                    tag_dialog.cancel_input();
+                                    should_refresh = true;
+                                }
+                                _ => {}
+                            }
+                        }
+                    }
+                }
+                
+                // Now handle the actions outside of the mutable borrow
+                if should_close {
+                    app.close_tag_management();
+                }
+                
+                if let Some(new_tag) = new_tag_to_add {
+                    if let Err(e) = app.add_tag_to_selected(&new_tag) {
+                        eprintln!("Error adding tag: {}", e);
+                    }
+                }
+                
+                if let Some(tag) = tag_to_remove {
+                    if let Err(e) = app.remove_tag_from_selected(&tag) {
+                        eprintln!("Error removing tag: {}", e);
+                    }
+                }
+                
+                if should_refresh {
+                    // Refresh the dialog with updated tags
+                    let updated_tags = app.get_selected_prompt_tags();
+                    app.tag_dialog = Some(crate::presentation::tui::components::TagManagementDialog::new(updated_tags));
+                }
+                
+                return Ok(());
+            }
 
             // Handle search mode
             if app.is_search_active() {
@@ -135,6 +272,15 @@ impl EventHandler {
                             eprintln!("Error creating prompt: {}", e);
                         }
                     }
+                }
+                KeyCode::Char('t') => {
+                    if matches!(app.mode(), AppMode::Management) {
+                        app.open_tag_management();
+                    }
+                }
+                KeyCode::Char('f') => {
+                    // Open tag filter dialog in both modes
+                    app.open_tag_filter();
                 }
                 _ => {}
             }
