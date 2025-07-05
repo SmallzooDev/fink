@@ -59,6 +59,41 @@ impl EventHandler {
                 return Ok(());
             }
 
+            // Handle search mode
+            if app.is_search_active() {
+                match key.code {
+                    KeyCode::Esc => {
+                        app.deactivate_search();
+                    }
+                    KeyCode::Char(c) => {
+                        let current_query = app.get_search_query().to_string();
+                        app.set_search_query(&format!("{}{}", current_query, c));
+                    }
+                    KeyCode::Backspace => {
+                        let current_query = app.get_search_query();
+                        if !current_query.is_empty() {
+                            let new_query = current_query[..current_query.len() - 1].to_string();
+                            app.set_search_query(&new_query);
+                        }
+                    }
+                    KeyCode::Enter => {
+                        // Keep search active but allow selection
+                        if matches!(app.mode(), AppMode::QuickSelect) {
+                            app.copy_selected_to_clipboard()?;
+                            app.quit();
+                        }
+                    }
+                    _ => {} // Ignore other keys in search mode
+                }
+                return Ok(());
+            }
+
+            // Check for search activation (/)
+            if key.code == KeyCode::Char('/') {
+                app.activate_search();
+                return Ok(());
+            }
+
             // Normal key handling
             match key.code {
                 KeyCode::Esc | KeyCode::Char('q') => {

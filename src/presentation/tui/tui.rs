@@ -23,6 +23,8 @@ pub struct TUIApp {
     application: DefaultPromptApplication,
     pending_action: Option<PendingAction>,
     confirmation_dialog: Option<Dialog>,
+    search_active: bool,
+    search_query: String,
 }
 
 impl TUIApp {
@@ -42,6 +44,8 @@ impl TUIApp {
             application,
             pending_action: None,
             confirmation_dialog: None,
+            search_active: false,
+            search_query: String::new(),
         })
     }
 
@@ -191,5 +195,42 @@ impl TUIApp {
             }
         }
         Ok(())
+    }
+
+    pub fn is_search_active(&self) -> bool {
+        self.search_active
+    }
+
+    pub fn activate_search(&mut self) {
+        self.search_active = true;
+        self.search_query.clear();
+    }
+
+    pub fn deactivate_search(&mut self) {
+        self.search_active = false;
+        self.search_query.clear();
+    }
+
+    pub fn set_search_query(&mut self, query: &str) {
+        self.search_query = query.to_string();
+    }
+
+    pub fn get_search_query(&self) -> &str {
+        &self.search_query
+    }
+
+    pub fn get_filtered_prompts(&self) -> Vec<crate::application::models::PromptMetadata> {
+        if self.search_query.is_empty() {
+            self.prompt_list.prompts().clone()
+        } else {
+            self.prompt_list
+                .prompts()
+                .iter()
+                .filter(|prompt| {
+                    prompt.name.to_lowercase().contains(&self.search_query.to_lowercase())
+                })
+                .cloned()
+                .collect()
+        }
     }
 }

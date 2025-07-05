@@ -17,14 +17,26 @@ impl<'a> QuickSelectScreen<'a> {
     }
 
     pub fn render(&self, f: &mut Frame, area: Rect) {
-        let chunks = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([
-                Constraint::Length(3),
-                Constraint::Min(0),
-                Constraint::Length(3),
-            ])
-            .split(area);
+        let chunks = if self.app.is_search_active() {
+            Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Length(3),  // Header
+                    Constraint::Length(3),  // Search bar
+                    Constraint::Min(0),     // Main content
+                    Constraint::Length(3),  // Footer
+                ])
+                .split(area)
+        } else {
+            Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Length(3),  // Header
+                    Constraint::Min(0),     // Main content
+                    Constraint::Length(3),  // Footer
+                ])
+                .split(area)
+        };
 
         // Header
         let mode_text = match self.app.mode() {
@@ -36,6 +48,14 @@ impl<'a> QuickSelectScreen<'a> {
             .block(Block::default().borders(Borders::ALL));
         f.render_widget(header, chunks[0]);
 
+        // Search bar (if active)
+        let main_content_index = if self.app.is_search_active() {
+            self.render_search_bar(f, chunks[1]);
+            2
+        } else {
+            1
+        };
+
         // Main content area - always split for list and preview
         let main_chunks = Layout::default()
             .direction(Direction::Horizontal)
@@ -43,20 +63,25 @@ impl<'a> QuickSelectScreen<'a> {
                 Constraint::Percentage(40),
                 Constraint::Percentage(60),
             ])
-            .split(chunks[1]);
+            .split(chunks[main_content_index]);
         
         self.render_prompt_list(f, main_chunks[0]);
         self.render_preview_pane(f, main_chunks[1]);
 
         // Footer
-        let footer_text = match self.app.mode() {
-            AppMode::QuickSelect => "↑↓: Navigate  Enter: Copy  m: Manage  Esc: Exit",
-            AppMode::Management => "↑↓: Navigate  e: Edit  d: Delete  n: New  m: Quick  Esc: Exit",
+        let footer_index = if self.app.is_search_active() { 3 } else { 2 };
+        let footer_text = if self.app.is_search_active() {
+            "Type to search  Enter: Select  Esc: Cancel search"
+        } else {
+            match self.app.mode() {
+                AppMode::QuickSelect => "↑↓: Navigate  Enter: Copy  /: Search  m: Manage  Esc: Exit",
+                AppMode::Management => "↑↓: Navigate  e: Edit  d: Delete  n: New  /: Search  m: Quick  Esc: Exit",
+            }
         };
         let footer = Paragraph::new(footer_text)
             .style(Style::default().fg(Color::Gray))
             .block(Block::default().borders(Borders::ALL));
-        f.render_widget(footer, chunks[2]);
+        f.render_widget(footer, chunks[footer_index]);
 
         // Render confirmation dialog if showing
         if let Some(dialog) = self.app.get_confirmation_dialog() {
@@ -65,14 +90,25 @@ impl<'a> QuickSelectScreen<'a> {
     }
 
     fn render_prompt_list(&self, f: &mut Frame, area: Rect) {
-        let prompts = self.app.get_prompts();
+        let prompts = if self.app.is_search_active() {
+            self.app.get_filtered_prompts()
+        } else {
+            self.app.get_prompts().clone()
+        };
+        
         let items: Vec<ListItem> = prompts
             .iter()
             .map(|p| ListItem::new(Line::from(vec![Span::raw(&p.name)])))
             .collect();
 
+        let title = if self.app.is_search_active() && !self.app.get_search_query().is_empty() {
+            format!("Prompts (filtered: {})", prompts.len())
+        } else {
+            "Prompts".to_string()
+        };
+
         let list = List::new(items)
-            .block(Block::default().borders(Borders::ALL).title("Prompts"))
+            .block(Block::default().borders(Borders::ALL).title(title))
             .highlight_style(
                 Style::default()
                     .bg(Color::DarkGray)
@@ -108,6 +144,20 @@ impl<'a> QuickSelectScreen<'a> {
             .scroll((0, 0)); // Allow scrolling in the future
 
         f.render_widget(preview, area);
+    }
+
+    fn render_search_bar(&self, f: &mut Frame, area: Rect) {
+        let search_query = self.app.get_search_query();
+        let search_text = format!("Search: {}_", search_query);
+        
+        let search_bar = Paragraph::new(search_text)
+            .style(Style::default().fg(Color::Yellow))
+            .block(Block::default()
+                .borders(Borders::ALL)
+                .title("Search (Esc to cancel)")
+                .border_style(Style::default().fg(Color::Yellow)));
+        
+        f.render_widget(search_bar, area);
     }
 
 }
