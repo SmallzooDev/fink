@@ -223,14 +223,10 @@ impl TUIApp {
         if self.search_query.is_empty() {
             self.prompt_list.prompts().clone()
         } else {
-            self.prompt_list
-                .prompts()
-                .iter()
-                .filter(|prompt| {
-                    prompt.name.to_lowercase().contains(&self.search_query.to_lowercase())
-                })
-                .cloned()
-                .collect()
+            // Use the application layer's search functionality
+            self.application
+                .search_prompts(&self.search_query, crate::application::models::SearchType::Name)
+                .unwrap_or_else(|_| Vec::new())
         }
     }
 }
