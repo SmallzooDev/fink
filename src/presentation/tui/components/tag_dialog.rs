@@ -3,7 +3,7 @@ use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Clear, List, ListItem, Paragraph},
+    widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph},
 };
 
 pub struct TagManagementDialog {
@@ -118,9 +118,20 @@ impl TagManagementDialog {
                 .collect();
             
             let list = List::new(items)
-                .block(Block::default().borders(Borders::ALL).title("Tags"));
+                .block(Block::default().borders(Borders::ALL).title("Tags"))
+                .highlight_style(
+                    Style::default()
+                        .bg(Color::DarkGray)
+                        .add_modifier(Modifier::BOLD)
+                );
+            
+            // Create list state for scrolling
+            let mut list_state = ListState::default();
+            if self.input_mode == TagInputMode::RemovingTag {
+                list_state.select(Some(self.selected_tag_index));
+            }
                 
-            f.render_widget(list, area);
+            f.render_stateful_widget(list, area, &mut list_state);
         }
     }
     
@@ -185,14 +196,18 @@ impl TagManagementDialog {
     }
     
     pub fn move_selection_up(&mut self) {
-        if self.input_mode == TagInputMode::RemovingTag && self.selected_tag_index > 0 {
-            self.selected_tag_index -= 1;
+        if self.input_mode == TagInputMode::RemovingTag && !self.current_tags.is_empty() {
+            if self.selected_tag_index == 0 {
+                self.selected_tag_index = self.current_tags.len() - 1;
+            } else {
+                self.selected_tag_index -= 1;
+            }
         }
     }
     
     pub fn move_selection_down(&mut self) {
-        if self.input_mode == TagInputMode::RemovingTag && self.selected_tag_index < self.current_tags.len() - 1 {
-            self.selected_tag_index += 1;
+        if self.input_mode == TagInputMode::RemovingTag && !self.current_tags.is_empty() {
+            self.selected_tag_index = (self.selected_tag_index + 1) % self.current_tags.len();
         }
     }
     

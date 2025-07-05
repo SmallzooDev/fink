@@ -3,7 +3,7 @@ use ratatui::{
     layout::{Alignment, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Clear, List, ListItem, Paragraph},
+    widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph},
 };
 
 pub struct TagFilterDialog {
@@ -79,13 +79,10 @@ impl TagFilterDialog {
             let items: Vec<ListItem> = self.available_tags
                 .iter()
                 .enumerate()
-                .map(|(i, tag)| {
-                    let is_selected = i == self.selected_index;
+                .map(|(_, tag)| {
                     let is_active = self.active_filter.as_ref() == Some(tag);
                     
-                    let style = if is_selected {
-                        Style::default().bg(Color::DarkGray).fg(Color::White)
-                    } else if is_active {
+                    let style = if is_active {
                         Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)
                     } else {
                         Style::default()
@@ -99,8 +96,18 @@ impl TagFilterDialog {
                 })
                 .collect();
             
-            let list = List::new(items);
-            f.render_widget(list, tag_list_area);
+            let list = List::new(items)
+                .highlight_style(
+                    Style::default()
+                        .bg(Color::DarkGray)
+                        .fg(Color::White)
+                        .add_modifier(Modifier::BOLD)
+                );
+            
+            let mut list_state = ListState::default();
+            list_state.select(Some(self.selected_index));
+            
+            f.render_stateful_widget(list, tag_list_area, &mut list_state);
         }
         
         // Help text
@@ -117,14 +124,18 @@ impl TagFilterDialog {
     }
     
     pub fn move_up(&mut self) {
-        if self.selected_index > 0 {
-            self.selected_index -= 1;
+        if !self.available_tags.is_empty() {
+            if self.selected_index == 0 {
+                self.selected_index = self.available_tags.len() - 1;
+            } else {
+                self.selected_index -= 1;
+            }
         }
     }
     
     pub fn move_down(&mut self) {
-        if self.selected_index < self.available_tags.len().saturating_sub(1) {
-            self.selected_index += 1;
+        if !self.available_tags.is_empty() {
+            self.selected_index = (self.selected_index + 1) % self.available_tags.len();
         }
     }
     

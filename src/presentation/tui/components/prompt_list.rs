@@ -50,4 +50,42 @@ impl PromptList {
     pub fn prompts(&self) -> &Vec<PromptMetadata> {
         &self.prompts
     }
+    
+    pub fn set_selected(&mut self, index: usize) {
+        if index < self.prompts.len() {
+            self.selected = index;
+        }
+    }
+    
+    pub fn find_and_select(&mut self, name: &str) -> bool {
+        if let Some(index) = self.prompts.iter().position(|p| p.name == name) {
+            self.selected = index;
+            true
+        } else {
+            false
+        }
+    }
+    
+    pub fn update_prompts(&mut self, new_prompts: Vec<PromptMetadata>) {
+        // Save current selection name
+        let current_name = self.get_selected().map(|p| p.name.clone());
+        
+        // Update prompts
+        self.prompts = new_prompts;
+        
+        // Try to restore selection
+        if let Some(name) = current_name {
+            if !self.find_and_select(&name) {
+                // If the prompt was not found, reset to 0
+                self.selected = 0;
+            }
+        } else {
+            self.selected = 0;
+        }
+        
+        // Ensure selected is within bounds
+        if self.selected >= self.prompts.len() && !self.prompts.is_empty() {
+            self.selected = self.prompts.len() - 1;
+        }
+    }
 }

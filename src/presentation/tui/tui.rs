@@ -111,11 +111,77 @@ impl TUIApp {
     }
 
     pub fn next(&mut self) {
-        self.prompt_list.next();
+        if self.is_search_active() || self.is_tag_filter_active() {
+            // Navigate only through filtered prompts
+            let filtered_prompts = self.get_filtered_prompts();
+            if filtered_prompts.is_empty() {
+                return;
+            }
+            
+            // Find current prompt in filtered list
+            if let Some(current) = self.prompt_list.get_selected() {
+                if let Some(current_index) = filtered_prompts.iter().position(|p| p.name == current.name) {
+                    // Get next index in filtered list
+                    let next_index = (current_index + 1) % filtered_prompts.len();
+                    let next_prompt = &filtered_prompts[next_index];
+                    
+                    // Find and select in main list
+                    self.prompt_list.find_and_select(&next_prompt.name);
+                } else {
+                    // Current selection not in filtered list, select first filtered item
+                    if let Some(first) = filtered_prompts.first() {
+                        self.prompt_list.find_and_select(&first.name);
+                    }
+                }
+            } else {
+                // No selection, select first filtered item
+                if let Some(first) = filtered_prompts.first() {
+                    self.prompt_list.find_and_select(&first.name);
+                }
+            }
+        } else {
+            // No filter active, use normal navigation
+            self.prompt_list.next();
+        }
     }
 
     pub fn previous(&mut self) {
-        self.prompt_list.previous();
+        if self.is_search_active() || self.is_tag_filter_active() {
+            // Navigate only through filtered prompts
+            let filtered_prompts = self.get_filtered_prompts();
+            if filtered_prompts.is_empty() {
+                return;
+            }
+            
+            // Find current prompt in filtered list
+            if let Some(current) = self.prompt_list.get_selected() {
+                if let Some(current_index) = filtered_prompts.iter().position(|p| p.name == current.name) {
+                    // Get previous index in filtered list
+                    let prev_index = if current_index == 0 {
+                        filtered_prompts.len() - 1
+                    } else {
+                        current_index - 1
+                    };
+                    let prev_prompt = &filtered_prompts[prev_index];
+                    
+                    // Find and select in main list
+                    self.prompt_list.find_and_select(&prev_prompt.name);
+                } else {
+                    // Current selection not in filtered list, select last filtered item
+                    if let Some(last) = filtered_prompts.last() {
+                        self.prompt_list.find_and_select(&last.name);
+                    }
+                }
+            } else {
+                // No selection, select last filtered item
+                if let Some(last) = filtered_prompts.last() {
+                    self.prompt_list.find_and_select(&last.name);
+                }
+            }
+        } else {
+            // No filter active, use normal navigation
+            self.prompt_list.previous();
+        }
     }
 
     pub fn selected_index(&self) -> usize {
@@ -137,7 +203,25 @@ impl TUIApp {
 
     pub fn get_list_state(&self) -> ListState {
         let mut state = ListState::default();
-        state.select(Some(self.prompt_list.selected()));
+        
+        if self.is_search_active() || self.is_tag_filter_active() {
+            // When filtered, find the index in the filtered list
+            let filtered_prompts = self.get_filtered_prompts();
+            if let Some(selected) = self.prompt_list.get_selected() {
+                if let Some(index) = filtered_prompts.iter().position(|p| p.name == selected.name) {
+                    state.select(Some(index));
+                } else {
+                    // Selected item not in filtered list
+                    state.select(None);
+                }
+            } else {
+                state.select(None);
+            }
+        } else {
+            // No filter, use the actual index
+            state.select(Some(self.prompt_list.selected()));
+        }
+        
         state
     }
 
@@ -186,7 +270,7 @@ impl TUIApp {
 
     fn reload_prompts(&mut self) -> Result<()> {
         let prompts_metadata = self.application.list_prompts(None)?;
-        self.prompt_list = PromptList::new(prompts_metadata);
+        self.prompt_list.update_prompts(prompts_metadata);
         Ok(())
     }
 
