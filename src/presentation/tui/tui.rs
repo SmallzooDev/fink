@@ -1,6 +1,7 @@
 use crate::application::application::DefaultPromptApplication;
 use crate::application::traits::PromptApplication;
 use crate::presentation::tui::components::{PromptList, confirmation_dialog::{ConfirmationDialog as Dialog, ConfirmationAction}, TagManagementDialog, TagFilterDialog};
+use crate::utils::config::Config;
 use anyhow::Result;
 use ratatui::widgets::ListState;
 use std::path::PathBuf;
@@ -37,9 +38,36 @@ impl TUIApp {
     pub fn new(base_path: PathBuf) -> Result<Self> {
         Self::new_with_mode(base_path, AppMode::QuickSelect)
     }
+    
+    pub fn new_with_config(config: &Config) -> Result<Self> {
+        Self::new_with_mode_and_config(config, AppMode::QuickSelect)
+    }
 
     pub fn new_with_mode(base_path: PathBuf, mode: AppMode) -> Result<Self> {
         let application = DefaultPromptApplication::new(base_path)?;
+        let prompts_metadata = application.list_prompts(None)?;
+        let prompt_list = PromptList::new(prompts_metadata);
+
+        Ok(Self {
+            mode,
+            should_quit: false,
+            prompt_list,
+            application,
+            pending_action: None,
+            confirmation_dialog: None,
+            search_active: false,
+            search_query: String::new(),
+            tag_filter_active: false,
+            active_tag_filter: None,
+            tag_management_active: false,
+            tag_dialog: None,
+            tag_filter_dialog_active: false,
+            tag_filter_dialog: None,
+        })
+    }
+    
+    pub fn new_with_mode_and_config(config: &Config, mode: AppMode) -> Result<Self> {
+        let application = DefaultPromptApplication::with_config(config)?;
         let prompts_metadata = application.list_prompts(None)?;
         let prompt_list = PromptList::new(prompts_metadata);
 

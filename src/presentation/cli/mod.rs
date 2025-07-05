@@ -2,8 +2,8 @@ use crate::application::application::DefaultPromptApplication;
 use crate::application::traits::PromptApplication;
 use anyhow::Result;
 use crate::utils::error::JkmsError;
+use crate::utils::config::Config;
 use clap::Subcommand;
-use std::path::PathBuf;
 
 fn handle_error(error: JkmsError) -> ! {
     eprintln!("Error: {}", error);
@@ -59,8 +59,8 @@ pub enum Commands {
 }
 
 
-pub fn execute_command(command: Commands, base_path: PathBuf) -> Result<()> {
-    let application = DefaultPromptApplication::new(base_path)?;
+pub fn execute_command(command: Commands, config: &Config) -> Result<()> {
+    let application = DefaultPromptApplication::with_config(config)?;
     
     match command {
         Commands::List => {

@@ -58,7 +58,10 @@ fn editor_launcher_should_use_visual_env_var_when_editor_not_set() {
 
 #[test]
 fn editor_launcher_should_default_to_vim() {
-    // Arrange
+    // Arrange - save current values
+    let saved_editor = env::var("EDITOR").ok();
+    let saved_visual = env::var("VISUAL").ok();
+    
     unsafe {
         env::remove_var("EDITOR");
         env::remove_var("VISUAL");
@@ -70,6 +73,20 @@ fn editor_launcher_should_default_to_vim() {
     
     // Assert
     assert_eq!(editor, "vim");
+    
+    // Cleanup - restore original values
+    unsafe {
+        if let Some(val) = saved_editor {
+            env::set_var("EDITOR", val);
+        } else {
+            env::remove_var("EDITOR");
+        }
+        if let Some(val) = saved_visual {
+            env::set_var("VISUAL", val);
+        } else {
+            env::remove_var("VISUAL");
+        }
+    }
 }
 
 #[test]

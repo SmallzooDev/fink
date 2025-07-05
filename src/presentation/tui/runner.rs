@@ -1,5 +1,6 @@
 use crate::presentation::tui::tui::{TUIApp, AppMode};
 use crate::presentation::tui::screens::QuickSelectScreen;
+use crate::utils::config::Config;
 use anyhow::Result;
 use crossterm::event::{self, Event, KeyCode};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
@@ -289,15 +290,15 @@ impl EventHandler {
     }
 }
 
-pub fn run(base_path: PathBuf) -> Result<()> {
-    run_with_mode(base_path, false)
+pub fn run(base_path: PathBuf, config: &Config) -> Result<()> {
+    run_with_mode(base_path, config, false)
 }
 
-pub fn run_manage_mode(base_path: PathBuf) -> Result<()> {
-    run_with_mode(base_path, true)
+pub fn run_manage_mode(base_path: PathBuf, config: &Config) -> Result<()> {
+    run_with_mode(base_path, config, true)
 }
 
-fn run_with_mode(base_path: PathBuf, manage_mode: bool) -> Result<()> {
+fn run_with_mode(_base_path: PathBuf, config: &Config, manage_mode: bool) -> Result<()> {
     // Setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -307,7 +308,7 @@ fn run_with_mode(base_path: PathBuf, manage_mode: bool) -> Result<()> {
 
     // Create app
     let mode = if manage_mode { AppMode::Management } else { AppMode::QuickSelect };
-    let mut app = TUIApp::new_with_mode(base_path.clone(), mode)?;
+    let mut app = TUIApp::new_with_mode_and_config(config, mode)?;
     let event_handler = EventHandler::new();
 
     // Main loop

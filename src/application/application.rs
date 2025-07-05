@@ -1,6 +1,7 @@
 use crate::utils::error::{Result, JkmsError, PromptError, ExternalError, StorageError};
 use crate::utils::frontmatter::FrontmatterUpdater;
 use crate::utils::templates::TemplateGenerator;
+use crate::utils::config::Config;
 use std::path::{Path, PathBuf};
 use std::cell::RefCell;
 use crate::application::models::{PromptMetadata, PromptFilter, SearchType};
@@ -25,6 +26,19 @@ impl DefaultPromptApplication {
             repository,
             clipboard,
             editor_launcher: EditorLauncher::new(),
+        })
+    }
+    
+    pub fn with_config(config: &Config) -> Result<Self> {
+        let storage = FileSystem::new(config.storage_path().to_path_buf());
+        let repository = Box::new(FileSystemRepository::new(storage));
+        let clipboard = RefCell::new(ClipboardManager::new());
+        let editor_launcher = EditorLauncher::with_editor(config.editor());
+
+        Ok(Self {
+            repository,
+            clipboard,
+            editor_launcher,
         })
     }
     
