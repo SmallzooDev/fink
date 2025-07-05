@@ -1,4 +1,5 @@
 use jkms::presentation::tui::tui::{AppMode, TUIApp};
+use jkms::presentation::tui::components::search::HighlightedText;
 use tempfile::tempdir;
 use std::fs;
 
@@ -90,4 +91,57 @@ tags: ["docs", "writing"]
     // Clear search should show all prompts again
     app.set_search_query("");
     assert_eq!(app.get_filtered_prompts().len(), 3);
+}
+
+#[test]
+fn test_search_result_highlighting() {
+    // Test that search terms are highlighted in the results
+    let highlighter = HighlightedText::new();
+    
+    // Test case 1: Single match
+    let text = "This is a test prompt";
+    let query = "test";
+    let highlighted = highlighter.highlight(text, query);
+    
+    assert_eq!(highlighted.segments.len(), 3);
+    assert_eq!(highlighted.segments[0].text, "This is a ");
+    assert_eq!(highlighted.segments[0].is_match, false);
+    assert_eq!(highlighted.segments[1].text, "test");
+    assert_eq!(highlighted.segments[1].is_match, true);
+    assert_eq!(highlighted.segments[2].text, " prompt");
+    assert_eq!(highlighted.segments[2].is_match, false);
+    
+    // Test case 2: Multiple matches
+    let text = "test this test case";
+    let query = "test";
+    let highlighted = highlighter.highlight(text, query);
+    
+    assert_eq!(highlighted.segments.len(), 4);
+    assert_eq!(highlighted.segments[0].text, "test");
+    assert_eq!(highlighted.segments[0].is_match, true);
+    assert_eq!(highlighted.segments[1].text, " this ");
+    assert_eq!(highlighted.segments[1].is_match, false);
+    assert_eq!(highlighted.segments[2].text, "test");
+    assert_eq!(highlighted.segments[2].is_match, true);
+    assert_eq!(highlighted.segments[3].text, " case");
+    assert_eq!(highlighted.segments[3].is_match, false);
+    
+    // Test case 3: Case insensitive matching
+    let text = "Test THIS test";
+    let query = "test";
+    let highlighted = highlighter.highlight(text, query);
+    
+    assert_eq!(highlighted.segments[0].text, "Test");
+    assert_eq!(highlighted.segments[0].is_match, true);
+    assert_eq!(highlighted.segments[2].text, "test");
+    assert_eq!(highlighted.segments[2].is_match, true);
+    
+    // Test case 4: No matches
+    let text = "No matches here";
+    let query = "xyz";
+    let highlighted = highlighter.highlight(text, query);
+    
+    assert_eq!(highlighted.segments.len(), 1);
+    assert_eq!(highlighted.segments[0].text, "No matches here");
+    assert_eq!(highlighted.segments[0].is_match, false);
 }

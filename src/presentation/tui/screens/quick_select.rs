@@ -1,4 +1,5 @@
 use crate::presentation::tui::tui::{TUIApp, AppMode};
+use crate::presentation::tui::components::search::HighlightedText;
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
@@ -96,9 +97,34 @@ impl<'a> QuickSelectScreen<'a> {
             self.app.get_prompts().clone()
         };
         
+        let search_query = if self.app.is_search_active() && !self.app.get_search_query().is_empty() {
+            Some(self.app.get_search_query())
+        } else {
+            None
+        };
+        
+        let highlighter = HighlightedText::new();
+        
         let items: Vec<ListItem> = prompts
             .iter()
-            .map(|p| ListItem::new(Line::from(vec![Span::raw(&p.name)])))
+            .map(|p| {
+                if let Some(query) = search_query {
+                    let highlighted = highlighter.highlight(&p.name, query);
+                    let spans: Vec<Span> = highlighted.segments
+                        .into_iter()
+                        .map(|seg| {
+                            if seg.is_match {
+                                Span::styled(seg.text, Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD))
+                            } else {
+                                Span::raw(seg.text)
+                            }
+                        })
+                        .collect();
+                    ListItem::new(Line::from(spans))
+                } else {
+                    ListItem::new(Line::from(vec![Span::raw(&p.name)]))
+                }
+            })
             .collect();
 
         let title = if self.app.is_search_active() && !self.app.get_search_query().is_empty() {
