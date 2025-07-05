@@ -223,14 +223,28 @@ impl EventHandler {
                                 should_confirm = true;
                             }
                         }
-                        KeyCode::Left | KeyCode::Char('h') => {
+                        KeyCode::Left => {
                             if create_dialog.current_field() == DialogField::Template {
                                 create_dialog.previous_template();
                             }
                         }
-                        KeyCode::Right | KeyCode::Char('l') => {
+                        KeyCode::Right => {
                             if create_dialog.current_field() == DialogField::Template {
                                 create_dialog.next_template();
+                            }
+                        }
+                        KeyCode::Char('h') => {
+                            if create_dialog.current_field() == DialogField::Template {
+                                create_dialog.previous_template();
+                            } else {
+                                create_dialog.add_char('h');
+                            }
+                        }
+                        KeyCode::Char('l') => {
+                            if create_dialog.current_field() == DialogField::Template {
+                                create_dialog.next_template();
+                            } else {
+                                create_dialog.add_char('l');
                             }
                         }
                         KeyCode::Char(c) => {

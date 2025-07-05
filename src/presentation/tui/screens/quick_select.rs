@@ -119,8 +119,8 @@ impl<'a> QuickSelectScreen<'a> {
         
         // Render error message if present
         if let Some(error_msg) = self.app.get_error_message() {
-            let error_width = 50.min(area.width - 4);
-            let error_height = 5;
+            let error_width = 60.min(area.width - 4);
+            let error_height = 6;
             let x = (area.width.saturating_sub(error_width)) / 2;
             let y = (area.height.saturating_sub(error_height)) / 2;
             
@@ -132,24 +132,26 @@ impl<'a> QuickSelectScreen<'a> {
             };
             
             // Clear the area
-            let clear = ratatui::widgets::Clear;
-            f.render_widget(clear, error_area);
+            f.render_widget(ratatui::widgets::Clear, error_area);
             
             // Render error box
             let error_text = vec![
                 Line::from(""),
-                Line::from(Span::raw(error_msg)),
+                Line::from(Span::styled(error_msg, Style::default().fg(Color::White))),
                 Line::from(""),
+                Line::from(Span::styled(
+                    "Press any key to continue", 
+                    Style::default().fg(Color::DarkGray)
+                )),
             ];
             
             let error_widget = Paragraph::new(error_text)
                 .block(Block::default()
                     .title(" Error ")
+                    .title_alignment(ratatui::layout::Alignment::Center)
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Red))
-                    .style(Style::default().bg(Color::Black)))
-                .alignment(ratatui::layout::Alignment::Center)
-                .style(Style::default().fg(Color::Red));
+                    .border_style(Style::default().fg(Color::Red)))
+                .alignment(ratatui::layout::Alignment::Center);
                 
             f.render_widget(error_widget, error_area);
         }
