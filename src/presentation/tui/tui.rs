@@ -25,6 +25,8 @@ pub struct TUIApp {
     confirmation_dialog: Option<Dialog>,
     search_active: bool,
     search_query: String,
+    tag_filter_active: bool,
+    active_tag_filter: Option<String>,
 }
 
 impl TUIApp {
@@ -46,6 +48,8 @@ impl TUIApp {
             confirmation_dialog: None,
             search_active: false,
             search_query: String::new(),
+            tag_filter_active: false,
+            active_tag_filter: None,
         })
     }
 
@@ -220,13 +224,68 @@ impl TUIApp {
     }
 
     pub fn get_filtered_prompts(&self) -> Vec<crate::application::models::PromptMetadata> {
-        if self.search_query.is_empty() {
-            self.prompt_list.prompts().clone()
-        } else {
-            // Use the application layer's search functionality
-            self.application
-                .search_prompts(&self.search_query, crate::application::models::SearchType::Name)
-                .unwrap_or_else(|_| Vec::new())
+        let mut prompts = self.prompt_list.prompts().clone();
+        
+        // Apply tag filter first if active
+        if let Some(tag) = &self.active_tag_filter {
+            prompts = self.application
+                .search_prompts(tag, crate::application::models::SearchType::Tags)
+                .unwrap_or_else(|_| Vec::new());
         }
+        
+        // Then apply search filter if active
+        if !self.search_query.is_empty() {
+            if self.active_tag_filter.is_some() {
+                // If tag filter is active, further filter by name search
+                let query_lower = self.search_query.to_lowercase();
+                prompts = prompts.into_iter()
+                    .filter(|p| p.name.to_lowercase().contains(&query_lower))
+                    .collect();
+            } else {
+                // Otherwise use application layer's search
+                prompts = self.application
+                    .search_prompts(&self.search_query, crate::application::models::SearchType::Name)
+                    .unwrap_or_else(|_| Vec::new());
+            }
+        }
+        
+        prompts
+    }
+    
+    // Tag filtering methods
+    pub fn is_tag_filter_active(&self) -> bool {
+        self.tag_filter_active
+    }
+    
+    pub fn get_active_tag_filter(&self) -> Option<&String> {
+        self.active_tag_filter.as_ref()
+    }
+    
+    pub fn activate_tag_filter(&mut self) {
+        self.tag_filter_active = true;
+    }
+    
+    pub fn set_tag_filter(&mut self, tag: &str) {
+        self.active_tag_filter = Some(tag.to_string());
+        self.tag_filter_active = true;
+    }
+    
+    pub fn clear_tag_filter(&mut self) {
+        self.active_tag_filter = None;
+        self.tag_filter_active = false;
+    }
+    
+    pub fn get_all_tags(&self) -> Vec<String> {
+        let mut tags = std::collections::HashSet::new();
+        
+        for prompt in self.prompt_list.prompts() {
+            for tag in &prompt.tags {
+                tags.insert(tag.clone());
+            }
+        }
+        
+        let mut sorted_tags: Vec<String> = tags.into_iter().collect();
+        sorted_tags.sort();
+        sorted_tags
     }
 }
