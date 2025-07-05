@@ -163,4 +163,25 @@ impl PromptApplication for DefaultPromptApplication {
         
         Ok(())
     }
+    
+    fn create_prompt_with_content(&self, name: &str, template: Option<&str>, content: Option<String>) -> Result<()> {
+        let normalized_name = name.to_lowercase().replace(' ', "-");
+        
+        // Check if prompt already exists
+        if self.repository.prompt_exists(&normalized_name) {
+            return Err(JkmsError::Prompt(PromptError::AlreadyExists(name.to_string())));
+        }
+        
+        let prompt_content = TemplateGenerator::generate_with_content(name, template, content.as_deref())?;
+        
+        // Create the prompt using repository
+        self.repository.create_prompt(&normalized_name, &prompt_content)
+            .map_err(|e| JkmsError::from(e))?;
+        Ok(())
+    }
+    
+    fn get_clipboard_content(&self) -> Result<String> {
+        self.clipboard.borrow_mut().get_content()
+            .map_err(|e| JkmsError::External(ExternalError::ClipboardError(e.to_string())))
+    }
 }

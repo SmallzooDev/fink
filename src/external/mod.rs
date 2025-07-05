@@ -19,6 +19,12 @@ impl ClipboardManager {
             .set_contents(text.to_string())
             .map_err(|e| anyhow::anyhow!("Failed to copy to clipboard: {}", e))
     }
+    
+    pub fn get_content(&mut self) -> Result<String> {
+        self.context
+            .get_contents()
+            .map_err(|e| anyhow::anyhow!("Failed to get clipboard content: {}", e))
+    }
 }
 
 impl Default for ClipboardManager {

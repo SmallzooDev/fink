@@ -1,6 +1,6 @@
 use crate::application::application::DefaultPromptApplication;
 use crate::application::traits::PromptApplication;
-use crate::presentation::tui::components::{PromptList, confirmation_dialog::{ConfirmationDialog as Dialog, ConfirmationAction}, TagManagementDialog, TagFilterDialog};
+use crate::presentation::tui::components::{PromptList, confirmation_dialog::{ConfirmationDialog as Dialog, ConfirmationAction}, TagManagementDialog, TagFilterDialog, CreateDialog};
 use crate::utils::config::Config;
 use anyhow::Result;
 use ratatui::widgets::ListState;
@@ -32,6 +32,8 @@ pub struct TUIApp {
     pub tag_dialog: Option<TagManagementDialog>,
     tag_filter_dialog_active: bool,
     pub tag_filter_dialog: Option<TagFilterDialog>,
+    create_dialog_active: bool,
+    pub create_dialog: Option<CreateDialog>,
 }
 
 impl TUIApp {
@@ -63,6 +65,8 @@ impl TUIApp {
             tag_dialog: None,
             tag_filter_dialog_active: false,
             tag_filter_dialog: None,
+            create_dialog_active: false,
+            create_dialog: None,
         })
     }
     
@@ -86,6 +90,8 @@ impl TUIApp {
             tag_dialog: None,
             tag_filter_dialog_active: false,
             tag_filter_dialog: None,
+            create_dialog_active: false,
+            create_dialog: None,
         })
     }
 
@@ -170,14 +176,8 @@ impl TUIApp {
     }
 
     pub fn create_new_prompt(&mut self) -> Result<()> {
-        // For now, create a simple prompt
-        // Later we can add a prompt creation dialog
-        let name = format!("new-prompt-{}", chrono::Utc::now().timestamp());
-        self.application.create_prompt(&name, None)?;
-        
-        // Reload prompts after creation
-        self.reload_prompts()?;
-        
+        // Open the create dialog instead of creating immediately
+        self.open_create_dialog();
         Ok(())
     }
 
@@ -427,5 +427,54 @@ impl TUIApp {
     
     pub fn get_tag_filter_dialog_mut(&mut self) -> Option<&mut TagFilterDialog> {
         self.tag_filter_dialog.as_mut()
+    }
+    
+    // Create dialog methods
+    pub fn open_create_dialog(&mut self) {
+        self.create_dialog = Some(CreateDialog::new());
+        self.create_dialog_active = true;
+    }
+    
+    pub fn close_create_dialog(&mut self) {
+        self.create_dialog = None;
+        self.create_dialog_active = false;
+    }
+    
+    pub fn is_create_dialog_active(&self) -> bool {
+        self.create_dialog_active
+    }
+    
+    pub fn get_create_dialog(&self) -> Option<&CreateDialog> {
+        self.create_dialog.as_ref()
+    }
+    
+    pub fn get_create_dialog_mut(&mut self) -> Option<&mut CreateDialog> {
+        self.create_dialog.as_mut()
+    }
+    
+    pub fn confirm_create(&mut self) -> Result<()> {
+        if let Some(dialog) = &self.create_dialog {
+            if dialog.is_valid() {
+                let filename = dialog.get_normalized_filename();
+                
+                match dialog.get_template() {
+                    crate::presentation::tui::components::CreateTemplate::FromClipboard => {
+                        // Get clipboard content and create prompt with it
+                        let clipboard_content = self.application.get_clipboard_content().ok();
+                        self.application.create_prompt_with_content(&filename, Some("clipboard"), clipboard_content)?;
+                    },
+                    crate::presentation::tui::components::CreateTemplate::Basic => {
+                        self.application.create_prompt(&filename, Some("basic"))?;
+                    },
+                    crate::presentation::tui::components::CreateTemplate::Default => {
+                        self.application.create_prompt(&filename, None)?;
+                    },
+                };
+                
+                self.close_create_dialog();
+                self.reload_prompts()?;
+            }
+        }
+        Ok(())
     }
 }

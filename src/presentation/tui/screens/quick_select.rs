@@ -98,6 +98,24 @@ impl<'a> QuickSelectScreen<'a> {
         if let Some(filter_dialog) = self.app.get_tag_filter_dialog() {
             filter_dialog.render(f, area);
         }
+        
+        // Render create dialog if showing
+        if let Some(create_dialog) = self.app.get_create_dialog() {
+            // Calculate centered area for dialog
+            let dialog_width = 60;
+            let dialog_height = 15;
+            let x = (area.width.saturating_sub(dialog_width)) / 2;
+            let y = (area.height.saturating_sub(dialog_height)) / 2;
+            
+            let dialog_area = Rect {
+                x: area.x + x,
+                y: area.y + y,
+                width: dialog_width.min(area.width),
+                height: dialog_height.min(area.height),
+            };
+            
+            f.render_widget(create_dialog, dialog_area);
+        }
     }
 
     fn render_prompt_list(&self, f: &mut Frame, area: Rect) {

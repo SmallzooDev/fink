@@ -196,6 +196,63 @@ impl EventHandler {
                 
                 return Ok(());
             }
+            
+            // Handle create dialog if showing
+            if app.is_create_dialog_active() {
+                use crate::presentation::tui::components::DialogField;
+                
+                let mut should_close = false;
+                let mut should_confirm = false;
+                
+                if let Some(create_dialog) = app.get_create_dialog_mut() {
+                    match key.code {
+                        KeyCode::Esc => {
+                            should_close = true;
+                        }
+                        KeyCode::Tab => {
+                            create_dialog.next_field();
+                        }
+                        KeyCode::Enter => {
+                            if create_dialog.is_valid() {
+                                should_confirm = true;
+                            }
+                        }
+                        KeyCode::Left => {
+                            if create_dialog.current_field() == DialogField::Template {
+                                create_dialog.previous_template();
+                            }
+                        }
+                        KeyCode::Right => {
+                            if create_dialog.current_field() == DialogField::Template {
+                                create_dialog.next_template();
+                            }
+                        }
+                        KeyCode::Char(c) => {
+                            if create_dialog.current_field() == DialogField::Filename {
+                                create_dialog.add_char(c);
+                            }
+                        }
+                        KeyCode::Backspace => {
+                            if create_dialog.current_field() == DialogField::Filename {
+                                create_dialog.delete_char();
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                
+                if should_close {
+                    app.close_create_dialog();
+                }
+                
+                if should_confirm {
+                    if let Err(e) = app.confirm_create() {
+                        eprintln!("Error creating prompt: {}", e);
+                    }
+                }
+                
+                return Ok(());
+            }
 
             // Handle search mode
             if app.is_search_active() {
