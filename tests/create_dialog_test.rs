@@ -6,7 +6,7 @@ fn test_create_dialog_initialization() {
     let dialog = CreateDialog::new();
     
     assert_eq!(dialog.get_filename(), "");
-    assert_eq!(dialog.get_template(), CreateTemplate::Default);
+    assert_eq!(dialog.get_template(), CreateTemplate::FromClipboard);
     assert_eq!(dialog.current_field(), DialogField::Filename);
 }
 
@@ -61,16 +61,16 @@ fn test_create_dialog_template_selection() {
     
     // Select different templates
     dialog.next_template();
+    assert_eq!(dialog.get_template(), CreateTemplate::Default);
+    
+    dialog.next_template();
     assert_eq!(dialog.get_template(), CreateTemplate::Basic);
     
     dialog.next_template();
-    assert_eq!(dialog.get_template(), CreateTemplate::FromClipboard);
-    
-    dialog.next_template();
-    assert_eq!(dialog.get_template(), CreateTemplate::Default); // Should wrap around
+    assert_eq!(dialog.get_template(), CreateTemplate::FromClipboard); // Should wrap around
     
     dialog.previous_template();
-    assert_eq!(dialog.get_template(), CreateTemplate::FromClipboard);
+    assert_eq!(dialog.get_template(), CreateTemplate::Basic);
 }
 
 #[test]

@@ -46,6 +46,12 @@ impl Default for EventHandler {
 impl EventHandler {
     pub fn handle_event(&self, app: &mut TUIApp, event: Event) -> Result<()> {
         if let Event::Key(key) = event {
+            // Clear any error message on key press
+            if app.has_error() {
+                app.clear_error();
+                return Ok(());
+            }
+            
             // Handle confirmation dialog first if showing
             if app.is_showing_confirmation() {
                 match key.code {
@@ -217,12 +223,12 @@ impl EventHandler {
                                 should_confirm = true;
                             }
                         }
-                        KeyCode::Left => {
+                        KeyCode::Left | KeyCode::Char('h') => {
                             if create_dialog.current_field() == DialogField::Template {
                                 create_dialog.previous_template();
                             }
                         }
-                        KeyCode::Right => {
+                        KeyCode::Right | KeyCode::Char('l') => {
                             if create_dialog.current_field() == DialogField::Template {
                                 create_dialog.next_template();
                             }
@@ -247,7 +253,7 @@ impl EventHandler {
                 
                 if should_confirm {
                     if let Err(e) = app.confirm_create() {
-                        eprintln!("Error creating prompt: {}", e);
+                        app.set_error(format!("Failed to create prompt: {}", e));
                     }
                 }
                 

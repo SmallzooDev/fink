@@ -34,6 +34,7 @@ pub struct TUIApp {
     pub tag_filter_dialog: Option<TagFilterDialog>,
     create_dialog_active: bool,
     pub create_dialog: Option<CreateDialog>,
+    error_message: Option<String>,
 }
 
 impl TUIApp {
@@ -67,6 +68,7 @@ impl TUIApp {
             tag_filter_dialog: None,
             create_dialog_active: false,
             create_dialog: None,
+            error_message: None,
         })
     }
     
@@ -92,6 +94,7 @@ impl TUIApp {
             tag_filter_dialog: None,
             create_dialog_active: false,
             create_dialog: None,
+            error_message: None,
         })
     }
 
@@ -476,5 +479,22 @@ impl TUIApp {
             }
         }
         Ok(())
+    }
+    
+    // Error message methods
+    pub fn set_error(&mut self, message: String) {
+        self.error_message = Some(message);
+    }
+    
+    pub fn clear_error(&mut self) {
+        self.error_message = None;
+    }
+    
+    pub fn has_error(&self) -> bool {
+        self.error_message.is_some()
+    }
+    
+    pub fn get_error_message(&self) -> Option<&str> {
+        self.error_message.as_deref()
     }
 }

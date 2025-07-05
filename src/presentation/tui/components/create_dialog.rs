@@ -14,25 +14,25 @@ pub enum DialogField {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum CreateTemplate {
+    FromClipboard,
     Default,
     Basic,
-    FromClipboard,
 }
 
 impl CreateTemplate {
     pub fn name(&self) -> &str {
         match self {
+            CreateTemplate::FromClipboard => "From Clipboard",
             CreateTemplate::Default => "Default",
             CreateTemplate::Basic => "Basic Template",
-            CreateTemplate::FromClipboard => "From Clipboard",
         }
     }
     
     pub fn description(&self) -> &str {
         match self {
+            CreateTemplate::FromClipboard => "Create from your current clipboard content",
             CreateTemplate::Default => "Empty prompt with default frontmatter",
             CreateTemplate::Basic => "Start with a structured template",
-            CreateTemplate::FromClipboard => "Create from your current clipboard content",
         }
     }
 }
@@ -47,7 +47,7 @@ impl CreateDialog {
     pub fn new() -> Self {
         Self {
             filename: String::new(),
-            template: CreateTemplate::Default,
+            template: CreateTemplate::FromClipboard,
             current_field: DialogField::Filename,
         }
     }
@@ -94,9 +94,9 @@ impl CreateDialog {
     pub fn next_template(&mut self) {
         if self.current_field == DialogField::Template {
             self.template = match self.template {
+                CreateTemplate::FromClipboard => CreateTemplate::Default,
                 CreateTemplate::Default => CreateTemplate::Basic,
                 CreateTemplate::Basic => CreateTemplate::FromClipboard,
-                CreateTemplate::FromClipboard => CreateTemplate::Default,
             };
         }
     }
@@ -104,9 +104,9 @@ impl CreateDialog {
     pub fn previous_template(&mut self) {
         if self.current_field == DialogField::Template {
             self.template = match self.template {
-                CreateTemplate::Default => CreateTemplate::FromClipboard,
                 CreateTemplate::FromClipboard => CreateTemplate::Basic,
                 CreateTemplate::Basic => CreateTemplate::Default,
+                CreateTemplate::Default => CreateTemplate::FromClipboard,
             };
         }
     }
@@ -220,7 +220,7 @@ impl Widget for &CreateDialog {
             DialogField::Template => {
                 vec![
                     Line::from(vec![
-                        Span::styled("←/→", Style::default().fg(Color::Cyan)),
+                        Span::styled("h/l or ←/→", Style::default().fg(Color::Cyan)),
                         Span::raw(" to change template • "),
                         Span::styled("Tab", Style::default().fg(Color::Cyan)),
                         Span::raw(" to switch fields • "),

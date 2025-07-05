@@ -116,6 +116,43 @@ impl<'a> QuickSelectScreen<'a> {
             
             f.render_widget(create_dialog, dialog_area);
         }
+        
+        // Render error message if present
+        if let Some(error_msg) = self.app.get_error_message() {
+            let error_width = 50.min(area.width - 4);
+            let error_height = 5;
+            let x = (area.width.saturating_sub(error_width)) / 2;
+            let y = (area.height.saturating_sub(error_height)) / 2;
+            
+            let error_area = Rect {
+                x: area.x + x,
+                y: area.y + y,
+                width: error_width,
+                height: error_height,
+            };
+            
+            // Clear the area
+            let clear = ratatui::widgets::Clear;
+            f.render_widget(clear, error_area);
+            
+            // Render error box
+            let error_text = vec![
+                Line::from(""),
+                Line::from(Span::raw(error_msg)),
+                Line::from(""),
+            ];
+            
+            let error_widget = Paragraph::new(error_text)
+                .block(Block::default()
+                    .title(" Error ")
+                    .borders(Borders::ALL)
+                    .border_style(Style::default().fg(Color::Red))
+                    .style(Style::default().bg(Color::Black)))
+                .alignment(ratatui::layout::Alignment::Center)
+                .style(Style::default().fg(Color::Red));
+                
+            f.render_widget(error_widget, error_area);
+        }
     }
 
     fn render_prompt_list(&self, f: &mut Frame, area: Rect) {

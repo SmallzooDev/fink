@@ -103,7 +103,8 @@ fn test_create_prompt_with_template() {
         
         // Switch to template field and select basic template
         dialog.next_field();
-        dialog.next_template(); // Switch to Basic template
+        dialog.next_template(); // Default
+        dialog.next_template(); // Basic template
     }
     
     // Confirm creation

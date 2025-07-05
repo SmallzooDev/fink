@@ -44,10 +44,7 @@ fn test_create_dialog_clipboard_template_selection() {
     // Navigate to template field
     dialog.next_field();
     
-    // Select clipboard template
-    dialog.next_template(); // Basic
-    dialog.next_template(); // FromClipboard
-    
+    // FromClipboard is now the default, so we don't need to change it
     assert_eq!(dialog.get_template(), CreateTemplate::FromClipboard);
     assert_eq!(dialog.get_filename(), "test");
 }
