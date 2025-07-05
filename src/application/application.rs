@@ -1,5 +1,7 @@
-use crate::utils::error::{Result, JkmsError, PromptError, ExternalError};
-use std::path::PathBuf;
+use crate::utils::error::{Result, JkmsError, PromptError, ExternalError, StorageError};
+use crate::utils::frontmatter::FrontmatterUpdater;
+use crate::utils::templates::TemplateGenerator;
+use std::path::{Path, PathBuf};
 use std::cell::RefCell;
 use crate::application::models::{PromptMetadata, PromptFilter, SearchType};
 use crate::application::repository::{PromptRepository, FileSystemRepository};
@@ -25,6 +27,29 @@ impl DefaultPromptApplication {
             editor_launcher: EditorLauncher::new(),
         })
     }
+    
+    // Helper methods for cleaner code
+    fn find_prompt_metadata(&self, name: &str) -> Result<PromptMetadata> {
+        self.repository.find_by_name(name)
+            .map_err(|e| JkmsError::from(e))?
+            .ok_or_else(|| JkmsError::Prompt(PromptError::NotFound(name.to_string())))
+    }
+    
+    fn get_prompt_file_path(&self, metadata: &PromptMetadata) -> PathBuf {
+        Path::new(&self.repository.get_base_path())
+            .join("jkms")
+            .join(&metadata.file_path)
+    }
+    
+    fn read_prompt_file(&self, path: &Path) -> Result<String> {
+        std::fs::read_to_string(path)
+            .map_err(|e| JkmsError::Storage(StorageError::Io(e)))
+    }
+    
+    fn write_prompt_file(&self, path: &Path, content: &str) -> Result<()> {
+        std::fs::write(path, content)
+            .map_err(|e| JkmsError::Storage(StorageError::Io(e)))
+    }
 }
 
 impl PromptApplication for DefaultPromptApplication {
@@ -42,9 +67,7 @@ impl PromptApplication for DefaultPromptApplication {
     }
 
     fn get_prompt(&self, identifier: &str) -> Result<(PromptMetadata, String)> {
-        let metadata = self.repository.find_by_name(identifier)
-            .map_err(|e| JkmsError::from(e))?
-            .ok_or_else(|| JkmsError::Prompt(PromptError::NotFound(identifier.to_string())))?;
+        let metadata = self.find_prompt_metadata(identifier)?;
         
         let content = self.repository.get_content(&metadata.file_path)
             .map_err(|e| JkmsError::from(e))?;
@@ -70,45 +93,7 @@ impl PromptApplication for DefaultPromptApplication {
             return Err(JkmsError::Prompt(PromptError::AlreadyExists(name.to_string())));
         }
         
-        let content = match template {
-            Some("basic") => {
-                format!(r#"---
-name: "{}"
-tags: []
----
-# {}
-
-# Instruction
-(a specific task or instruction you want the model to perform)
-Please input your prompt's instruction in here!
-
-# Context
-(external information or additional context that can steer the model to better responses)
-Please input your prompt's context in here!
-
-# Input Data
-(the input or question that we are interested to find a response for)
-Please input your prompt's input data in here!
-
-# Output Indicator
-(the type or format of the output)
-Please input your prompt's output indicator here!
-"#, name, name)
-            }
-            Some(template_name) => {
-                return Err(JkmsError::Prompt(PromptError::InvalidFormat(format!("Unknown template: {}", template_name))));
-            }
-            None => {
-                // Create the default content
-                format!(r#"---
-name: "{}"
-tags: []
----
-# {}
-
-"#, name, name)
-            }
-        };
+        let content = TemplateGenerator::generate(name, template)?;
         
         // Create the prompt using repository
         self.repository.create_prompt(&normalized_name, &content)
@@ -117,41 +102,26 @@ tags: []
     }
 
     fn edit_prompt(&self, name: &str) -> Result<()> {
-        // Find the prompt
-        let metadata = self.repository.find_by_name(name)
-            .map_err(|e| JkmsError::from(e))?
-            .ok_or_else(|| JkmsError::Prompt(PromptError::NotFound(name.to_string())))?;
+        let metadata = self.find_prompt_metadata(name)?;
+        let file_path = self.get_prompt_file_path(&metadata);
         
-        // Get the file path
-        let file_path = std::path::Path::new(&self.repository.get_base_path())
-            .join("jkms")
-            .join(&metadata.file_path);
-        
-        // Launch the editor using the EditorLauncher
         self.editor_launcher.launch(&file_path)?;
         
         Ok(())
     }
 
     fn delete_prompt(&self, name: &str, force: bool) -> Result<()> {
-        // Find the prompt
-        let metadata = self.repository.find_by_name(name)
-            .map_err(|e| JkmsError::from(e))?
-            .ok_or_else(|| JkmsError::Prompt(PromptError::NotFound(name.to_string())))?;
+        let metadata = self.find_prompt_metadata(name)?;
         
-        // If not forced, we would normally ask for confirmation here
-        // For now, we'll implement the force flag behavior
         if !force {
-            // In a real implementation, we would prompt for confirmation
-            // For CLI testing, we'll skip this for now
-            return Err(JkmsError::Validation(crate::utils::error::ValidationError::InvalidInput("confirmation", "Deletion cancelled. Use --force to skip confirmation.".to_string())));
+            return Err(JkmsError::Validation(crate::utils::error::ValidationError::InvalidInput(
+                "confirmation", 
+                "Deletion cancelled. Use --force to skip confirmation.".to_string()
+            )));
         }
         
-        // Delete the prompt
         self.repository.delete_prompt(&metadata.file_path)
-            .map_err(|e| JkmsError::from(e))?;
-        
-        Ok(())
+            .map_err(|e| JkmsError::from(e))
     }
 
     fn copy_prompt(&self, name: &str) -> Result<()> {
@@ -169,73 +139,13 @@ tags: []
     }
 
     fn update_prompt_tags(&self, name: &str, tags: Vec<String>) -> Result<()> {
-        // Find the prompt
-        let metadata = self.repository.find_by_name(name)
-            .map_err(|e| JkmsError::from(e))?
-            .ok_or_else(|| JkmsError::Prompt(PromptError::NotFound(name.to_string())))?;
+        let metadata = self.find_prompt_metadata(name)?;
+        let file_path = self.get_prompt_file_path(&metadata);
         
-        // Get the file path
-        let file_path = std::path::Path::new(&self.repository.get_base_path())
-            .join("jkms")
-            .join(&metadata.file_path);
+        let content = self.read_prompt_file(&file_path)?;
+        let updated_content = FrontmatterUpdater::update_tags(&content, name, &tags)?;
         
-        // Read the current content
-        let content = std::fs::read_to_string(&file_path)
-            .map_err(|e| JkmsError::Storage(crate::utils::error::StorageError::Io(e)))?;
-        
-        // Parse and update the frontmatter
-        let updated_content = if content.starts_with("---\n") {
-            let parts: Vec<&str> = content.splitn(3, "---\n").collect();
-            if parts.len() >= 3 {
-                // Parse existing frontmatter
-                let frontmatter = parts[1].to_string();
-                
-                // Update tags in frontmatter
-                let lines: Vec<&str> = frontmatter.lines().collect();
-                let mut new_lines = Vec::new();
-                let mut tags_updated = false;
-                
-                for line in lines {
-                    if line.starts_with("tags:") {
-                        new_lines.push(format!("tags: [{}]", 
-                            tags.iter()
-                                .map(|t| format!("\"{}\"", t))
-                                .collect::<Vec<_>>()
-                                .join(", ")
-                        ));
-                        tags_updated = true;
-                    } else {
-                        new_lines.push(line.to_string());
-                    }
-                }
-                
-                // If tags didn't exist, add them
-                if !tags_updated {
-                    new_lines.push(format!("tags: [{}]", 
-                        tags.iter()
-                            .map(|t| format!("\"{}\"", t))
-                            .collect::<Vec<_>>()
-                            .join(", ")
-                    ));
-                }
-                
-                format!("---\n{}\n---\n{}", new_lines.join("\n"), parts[2])
-            } else {
-                content
-            }
-        } else {
-            // No frontmatter, add it
-            format!("---\nname: \"{}\"\ntags: [{}]\n---\n{}", name, 
-                tags.iter()
-                    .map(|t| format!("\"{}\"", t))
-                    .collect::<Vec<_>>()
-                    .join(", "),
-                content)
-        };
-        
-        // Write the updated content back
-        std::fs::write(&file_path, updated_content)
-            .map_err(|e| JkmsError::Storage(crate::utils::error::StorageError::Io(e)))?;
+        self.write_prompt_file(&file_path, &updated_content)?;
         
         Ok(())
     }
