@@ -21,6 +21,12 @@ fink is a command-line tool designed to help you efficiently manage, organize, a
 
 ## Installation
 
+### Using Homebrew (macOS)
+
+```bash
+brew tap SmallzooDev/fink
+brew install fink
+```
 
 ### From Source
 
@@ -35,8 +41,8 @@ cargo install --path .
 
 ### Prerequisites
 
-- Rust 1.70 or higher
-- Cargo
+- For Homebrew installation: macOS with Homebrew installed
+- For building from source: Rust 1.70 or higher and Cargo
 
 ## Usage
 
