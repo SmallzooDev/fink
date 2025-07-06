@@ -2,7 +2,7 @@ class Fink < Formula
   desc "Beautiful TUI for managing AI prompts with version control"
   homepage "https://github.com/SmallzooDev/fink"
   url "https://github.com/SmallzooDev/fink/archive/v0.1.0.tar.gz"
-  sha256 "PLACEHOLDER_SHA256"
+  sha256 "834af27d9211a95eaae8ec3b095367c9a49c400992ae8d9eed8f6ce16b9e5cad"
   license "MIT"
   head "https://github.com/SmallzooDev/fink.git", branch: "main"
 
