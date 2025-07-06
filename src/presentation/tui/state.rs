@@ -136,6 +136,7 @@ impl UIState {
                 self.mode = match self.mode {
                     AppMode::QuickSelect => AppMode::Management,
                     AppMode::Management => AppMode::QuickSelect,
+                    AppMode::Build => AppMode::QuickSelect,
                 };
             }
             UIEvent::Quit => {

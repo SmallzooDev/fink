@@ -46,9 +46,14 @@ impl Default for EventHandler {
 impl EventHandler {
     pub fn handle_event(&self, app: &mut TUIApp, event: Event) -> Result<()> {
         if let Event::Key(key) = event {
-            // Clear any error message on key press
+            // Clear any error or success message on key press
             if app.has_error() {
                 app.clear_error();
+                return Ok(());
+            }
+            
+            if app.has_success() {
+                app.clear_success();
                 return Ok(());
             }
             
@@ -282,6 +287,98 @@ impl EventHandler {
                 return Ok(());
             }
 
+            // Handle build mode
+            if app.is_build_mode() {
+                if let Some(panel) = app.get_interactive_build_panel_mut() {
+                    use crate::presentation::tui::components::BuildStep;
+                    
+                    match panel.current_step {
+                        BuildStep::AddComment => {
+                            // Handle comment input
+                            match key.code {
+                                KeyCode::Esc => {
+                                    panel.finish_comment();
+                                }
+                                KeyCode::Enter => {
+                                    panel.finish_comment();
+                                }
+                                KeyCode::Char(c) => {
+                                    panel.add_comment_char(c);
+                                }
+                                KeyCode::Backspace => {
+                                    panel.delete_comment_char();
+                                }
+                                KeyCode::Left => {
+                                    panel.move_cursor_left();
+                                }
+                                KeyCode::Right => {
+                                    panel.move_cursor_right();
+                                }
+                                _ => {}
+                            }
+                        }
+                        BuildStep::Complete => {
+                            // Handle completion
+                            match key.code {
+                                KeyCode::Enter | KeyCode::Esc => {
+                                    if let Err(e) = app.combine_and_copy_selected_prompts() {
+                                        app.set_error(format!("Failed to combine prompts: {}", e));
+                                    }
+                                }
+                                _ => {}
+                            }
+                        }
+                        _ => {
+                            // Handle prompt selection steps
+                            match key.code {
+                                KeyCode::Esc => {
+                                    app.exit_build_mode();
+                                }
+                                KeyCode::Up | KeyCode::Char('k') => {
+                                    panel.previous();
+                                }
+                                KeyCode::Down | KeyCode::Char('j') => {
+                                    panel.next();
+                                }
+                                KeyCode::Enter => {
+                                    panel.select_current();
+                                }
+                                _ => {}
+                            }
+                        }
+                    }
+                } else {
+                    // Fallback to old build panel if interactive panel is not available
+                    match key.code {
+                        KeyCode::Esc => {
+                            app.exit_build_mode();
+                        }
+                        KeyCode::Up | KeyCode::Char('k') => {
+                            if let Some(build_panel) = app.get_build_panel_mut() {
+                                build_panel.previous();
+                            }
+                        }
+                        KeyCode::Down | KeyCode::Char('j') => {
+                            if let Some(build_panel) = app.get_build_panel_mut() {
+                                build_panel.next();
+                            }
+                        }
+                        KeyCode::Char(' ') => {
+                            if let Some(build_panel) = app.get_build_panel_mut() {
+                                build_panel.toggle_selection();
+                            }
+                        }
+                        KeyCode::Enter => {
+                            if let Err(e) = app.combine_and_copy_selected_prompts() {
+                                app.set_error(format!("Failed to combine prompts: {}", e));
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                return Ok(());
+            }
+
             // Handle search mode
             if app.is_search_active() {
                 match key.code {
@@ -368,6 +465,12 @@ impl EventHandler {
                     // Open tag filter dialog in both modes
                     app.open_tag_filter();
                 }
+                KeyCode::Char('b') => {
+                    // Enter build mode from QuickSelect or Management mode
+                    if matches!(app.mode(), AppMode::QuickSelect | AppMode::Management) {
+                        app.enter_build_mode();
+                    }
+                }
                 _ => {}
             }
         }
@@ -400,15 +503,19 @@ fn run_with_mode(_base_path: PathBuf, config: &Config, manage_mode: bool) -> Res
     loop {
         // Draw UI
         terminal.draw(|f| {
-            if manage_mode {
-                // TODO: Render management screen
-                let screen = QuickSelectScreen::new(&app);
-                screen.render(f, f.size());
-            } else {
-                let screen = QuickSelectScreen::new(&app);
-                screen.render(f, f.size());
-            }
+            // Always render the basic screen first
+            let screen = QuickSelectScreen::new(&app);
+            screen.render(f, f.size());
         })?;
+        
+        // Handle build mode rendering separately to work around borrowing issues
+        if app.is_build_mode() {
+            terminal.draw(|f| {
+                if let Some(panel) = app.get_interactive_build_panel_mut() {
+                    panel.render(f, f.size());
+                }
+            })?;
+        }
 
         // Handle events
         if let Ok(event) = event::read() {

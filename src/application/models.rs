@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Hash)]
 pub enum PromptType {
     Instruction,
     Context,
@@ -13,6 +14,19 @@ pub enum PromptType {
 impl Default for PromptType {
     fn default() -> Self {
         PromptType::Whole
+    }
+}
+
+impl fmt::Display for PromptType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            PromptType::Instruction => write!(f, "Instruction"),
+            PromptType::Context => write!(f, "Context"),
+            PromptType::InputIndicator => write!(f, "Input Indicator"),
+            PromptType::OutputIndicator => write!(f, "Output Indicator"),
+            PromptType::Etc => write!(f, "Etc"),
+            PromptType::Whole => write!(f, "Whole"),
+        }
     }
 }
 

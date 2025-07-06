@@ -43,6 +43,7 @@ impl<'a> QuickSelectScreen<'a> {
         let mode_text = match self.app.mode() {
             AppMode::QuickSelect => "jkms Manager - Quick Select",
             AppMode::Management => "jkms Manager - Management Mode",
+            AppMode::Build => "jkms Manager - Build Mode",
         };
         let header = Paragraph::new(mode_text)
             .style(Style::default().fg(Color::Cyan))
@@ -57,17 +58,27 @@ impl<'a> QuickSelectScreen<'a> {
             1
         };
 
-        // Main content area - always split for list and preview
-        let main_chunks = Layout::default()
-            .direction(Direction::Horizontal)
-            .constraints([
-                Constraint::Percentage(40),
-                Constraint::Percentage(60),
-            ])
-            .split(chunks[main_content_index]);
-        
-        self.render_prompt_list(f, main_chunks[0]);
-        self.render_preview_pane(f, main_chunks[1]);
+        // Main content area - render differently based on mode
+        if self.app.is_build_mode() {
+            // In build mode, we can't render the interactive panel here due to borrowing rules
+            // The panel will be rendered separately in the main render loop
+            let placeholder = Paragraph::new("Build mode active - Interactive panel rendering...")
+                .block(Block::default()
+                    .borders(Borders::ALL));
+            f.render_widget(placeholder, chunks[main_content_index]);
+        } else {
+            // Normal mode - split for list and preview
+            let main_chunks = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints([
+                    Constraint::Percentage(40),
+                    Constraint::Percentage(60),
+                ])
+                .split(chunks[main_content_index]);
+            
+            self.render_prompt_list(f, main_chunks[0]);
+            self.render_preview_pane(f, main_chunks[1]);
+        }
 
         // Footer
         let footer_index = if self.app.is_search_active() { 3 } else { 2 };
@@ -75,8 +86,9 @@ impl<'a> QuickSelectScreen<'a> {
             "Type to search  Enter: Select  Esc: Cancel search"
         } else {
             match self.app.mode() {
-                AppMode::QuickSelect => "↑↓: Navigate  Enter: Copy  /: Search  f: Filter  m: Manage  Esc: Exit",
-                AppMode::Management => "↑↓: Navigate  e: Edit  d: Delete  n: New  t: Tags  f: Filter  /: Search  m: Quick  Esc: Exit",
+                AppMode::QuickSelect => "↑↓: Navigate  Enter: Copy  /: Search  f: Filter  m: Manage  b: Build  Esc: Exit",
+                AppMode::Management => "↑↓: Navigate  e: Edit  d: Delete  n: New  t: Tags  f: Filter  /: Search  m: Quick  b: Build  Esc: Exit",
+                AppMode::Build => "↑↓: Navigate  Space: Select  Enter: Combine  Esc: Back",
             }
         };
         let footer = Paragraph::new(footer_text)
@@ -154,6 +166,45 @@ impl<'a> QuickSelectScreen<'a> {
                 .alignment(ratatui::layout::Alignment::Center);
                 
             f.render_widget(error_widget, error_area);
+        }
+        
+        // Render success message if present
+        if let Some(success_msg) = self.app.get_success_message() {
+            let success_width = 60.min(area.width - 4);
+            let success_height = 6;
+            let x = (area.width.saturating_sub(success_width)) / 2;
+            let y = (area.height.saturating_sub(success_height)) / 2;
+            
+            let success_area = Rect {
+                x: area.x + x,
+                y: area.y + y,
+                width: success_width,
+                height: success_height,
+            };
+            
+            // Clear the area
+            f.render_widget(ratatui::widgets::Clear, success_area);
+            
+            // Render success box
+            let success_text = vec![
+                Line::from(""),
+                Line::from(Span::styled(success_msg, Style::default().fg(Color::White))),
+                Line::from(""),
+                Line::from(Span::styled(
+                    "Press any key to continue", 
+                    Style::default().fg(Color::DarkGray)
+                )),
+            ];
+            
+            let success_widget = Paragraph::new(success_text)
+                .block(Block::default()
+                    .title(" Success ")
+                    .title_alignment(ratatui::layout::Alignment::Center)
+                    .borders(Borders::ALL)
+                    .border_style(Style::default().fg(Color::Green)))
+                .alignment(ratatui::layout::Alignment::Center);
+                
+            f.render_widget(success_widget, success_area);
         }
     }
 

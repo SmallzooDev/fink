@@ -1,6 +1,6 @@
 use crate::application::application::DefaultPromptApplication;
 use crate::application::traits::PromptApplication;
-use crate::presentation::tui::components::{PromptList, confirmation_dialog::{ConfirmationDialog as Dialog, ConfirmationAction}, TagManagementDialog, TagFilterDialog, CreateDialog};
+use crate::presentation::tui::components::{PromptList, confirmation_dialog::{ConfirmationDialog as Dialog, ConfirmationAction}, TagManagementDialog, TagFilterDialog, CreateDialog, BuildPanel, InteractiveBuildPanel};
 use crate::utils::config::Config;
 use anyhow::Result;
 use ratatui::widgets::ListState;
@@ -10,6 +10,7 @@ use std::path::PathBuf;
 pub enum AppMode {
     QuickSelect,
     Management,
+    Build,
 }
 
 #[derive(Debug, PartialEq)]
@@ -34,7 +35,10 @@ pub struct TUIApp {
     pub tag_filter_dialog: Option<TagFilterDialog>,
     create_dialog_active: bool,
     pub create_dialog: Option<CreateDialog>,
+    build_panel: Option<BuildPanel>,
+    interactive_build_panel: Option<InteractiveBuildPanel>,
     error_message: Option<String>,
+    success_message: Option<String>,
 }
 
 impl TUIApp {
@@ -68,7 +72,10 @@ impl TUIApp {
             tag_filter_dialog: None,
             create_dialog_active: false,
             create_dialog: None,
+            build_panel: None,
+            interactive_build_panel: None,
             error_message: None,
+            success_message: None,
         })
     }
     
@@ -94,12 +101,11 @@ impl TUIApp {
             tag_filter_dialog: None,
             create_dialog_active: false,
             create_dialog: None,
+            build_panel: None,
+            interactive_build_panel: None,
             error_message: None,
+            success_message: None,
         })
-    }
-
-    pub fn mode(&self) -> &AppMode {
-        &self.mode
     }
 
     pub fn should_quit(&self) -> bool {
@@ -225,6 +231,32 @@ impl TUIApp {
         state
     }
 
+    pub fn mode(&self) -> &AppMode {
+        &self.mode
+    }
+
+    pub fn enter_build_mode(&mut self) {
+        self.mode = AppMode::Build;
+        let build_prompts = self.get_build_prompts();
+        self.interactive_build_panel = Some(InteractiveBuildPanel::new(build_prompts));
+    }
+
+    pub fn exit_build_mode(&mut self) {
+        self.mode = AppMode::QuickSelect;
+        self.build_panel = None;
+        self.interactive_build_panel = None;
+    }
+
+    pub fn get_build_prompts(&self) -> Vec<crate::application::models::PromptMetadata> {
+        use crate::application::models::PromptType;
+        
+        self.prompt_list.prompts()
+            .iter()
+            .filter(|p| !matches!(p.prompt_type, PromptType::Whole))
+            .cloned()
+            .collect()
+    }
+
     pub fn copy_selected_to_clipboard(&mut self) -> Result<()> {
         if let Some(content) = self.get_selected_content() {
             self.application.copy_to_clipboard(&content)?;
@@ -238,6 +270,7 @@ impl TUIApp {
         self.mode = match self.mode {
             AppMode::QuickSelect => AppMode::Management,
             AppMode::Management => AppMode::QuickSelect,
+            AppMode::Build => AppMode::QuickSelect,
         };
     }
 
@@ -268,7 +301,7 @@ impl TUIApp {
         Ok(())
     }
 
-    fn reload_prompts(&mut self) -> Result<()> {
+    pub fn reload_prompts(&mut self) -> Result<()> {
         let prompts_metadata = self.application.list_prompts(None)?;
         self.prompt_list.update_prompts(prompts_metadata);
         Ok(())
@@ -581,5 +614,143 @@ impl TUIApp {
     
     pub fn get_error_message(&self) -> Option<&str> {
         self.error_message.as_deref()
+    }
+    
+    // Success message methods
+    pub fn set_success(&mut self, message: String) {
+        self.success_message = Some(message);
+        // Clear any error message when setting success
+        self.error_message = None;
+    }
+    
+    pub fn clear_success(&mut self) {
+        self.success_message = None;
+    }
+    
+    pub fn has_success(&self) -> bool {
+        self.success_message.is_some()
+    }
+    
+    pub fn get_success_message(&self) -> Option<&str> {
+        self.success_message.as_deref()
+    }
+    
+    // Build panel methods
+    pub fn get_build_panel(&self) -> Option<&BuildPanel> {
+        self.build_panel.as_ref()
+    }
+    
+    pub fn get_build_panel_mut(&mut self) -> Option<&mut BuildPanel> {
+        self.build_panel.as_mut()
+    }
+    
+    pub fn is_build_mode(&self) -> bool {
+        matches!(self.mode, AppMode::Build)
+    }
+    
+    // Interactive build panel methods
+    pub fn get_interactive_build_panel(&self) -> Option<&InteractiveBuildPanel> {
+        self.interactive_build_panel.as_ref()
+    }
+    
+    pub fn get_interactive_build_panel_mut(&mut self) -> Option<&mut InteractiveBuildPanel> {
+        self.interactive_build_panel.as_mut()
+    }
+    
+    pub fn combine_and_copy_selected_prompts(&mut self) -> Result<()> {
+        if let Some(interactive_panel) = &self.interactive_build_panel {
+            let selected_prompts = interactive_panel.get_selected_prompt_names();
+            
+            if selected_prompts.is_empty() {
+                return Err(anyhow::anyhow!("No prompts selected"));
+            }
+            
+            let mut combined_content = String::new();
+            
+            // Add prompts in order
+            for (_, prompt_name) in &selected_prompts {
+                if !combined_content.is_empty() {
+                    combined_content.push_str("\n\n");
+                }
+                
+                // Get the actual content of the prompt
+                if let Ok((_, content)) = self.application.get_prompt(prompt_name) {
+                    combined_content.push_str(&content);
+                }
+            }
+            
+            // Add comment if provided
+            let comment = interactive_panel.get_comment();
+            if !comment.is_empty() {
+                combined_content.push_str("\n\n");
+                combined_content.push_str("# Additional Notes:\n");
+                combined_content.push_str(comment);
+            }
+            
+            // Copy to clipboard
+            self.application.copy_to_clipboard(&combined_content)?;
+            
+            // Set success message with count
+            let prompt_count = selected_prompts.len();
+            self.set_success(format!("Successfully combined {} prompts and copied to clipboard!", prompt_count));
+            
+            // Exit build mode after successful copy
+            self.exit_build_mode();
+            
+            Ok(())
+        } else if let Some(build_panel) = &self.build_panel {
+            // Fallback to old build panel logic
+            let selected_prompts = build_panel.get_selected_prompts();
+            
+            if selected_prompts.is_empty() {
+                return Err(anyhow::anyhow!("No prompts selected"));
+            }
+            
+            // Combine prompts by type order
+            use crate::application::models::PromptType;
+            let type_order = [
+                PromptType::Instruction,
+                PromptType::Context,
+                PromptType::InputIndicator,
+                PromptType::OutputIndicator,
+                PromptType::Etc,
+            ];
+            
+            let mut combined_content = String::new();
+            
+            for prompt_type in &type_order {
+                // Get prompts of this type that were selected
+                let prompts_of_type: Vec<_> = selected_prompts
+                    .iter()
+                    .filter(|p| p.prompt_type == *prompt_type)
+                    .collect();
+                
+                // Add prompts of this type to the combined content
+                for prompt in prompts_of_type {
+                    if !combined_content.is_empty() {
+                        combined_content.push_str("\n\n");
+                    }
+                    
+                    // Get the actual content of the prompt
+                    if let Ok((_, content)) = self.application.get_prompt(&prompt.name) {
+                        combined_content.push_str(&content);
+                    }
+                }
+            }
+            
+            // Copy to clipboard
+            self.application.copy_to_clipboard(&combined_content)?;
+            
+            // Set success message with count
+            let prompt_count = selected_prompts.len();
+            self.set_success(format!("Successfully combined {} prompts and copied to clipboard!", prompt_count));
+            
+            // Exit build mode after successful copy
+            self.exit_build_mode();
+            
+            Ok(())
+        } else {
+            Err(anyhow::anyhow!("Build panel not initialized"))
+        }
     }
 }
