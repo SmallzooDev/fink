@@ -14,6 +14,8 @@ pub trait PromptRepository {
     fn get_template_content(&self, template_name: &str) -> Result<String>;
     fn get_base_path(&self) -> &std::path::Path;
     fn delete_prompt(&self, file_path: &str) -> Result<()>;
+    fn read_prompt(&self, metadata: &PromptMetadata) -> Result<String>;
+    fn write_prompt(&self, metadata: &PromptMetadata, content: &str) -> Result<()>;
 }
 
 /// Adapter to use FileSystem as a PromptRepository
@@ -113,5 +115,15 @@ impl PromptRepository for FileSystemRepository {
         let full_path = Path::new("jkms").join(file_path);
         self.storage.delete(&full_path)?;
         Ok(())
+    }
+
+    fn read_prompt(&self, metadata: &PromptMetadata) -> Result<String> {
+        let path = Path::new("jkms").join(&metadata.file_path);
+        self.storage.read_to_string(&path)
+    }
+
+    fn write_prompt(&self, metadata: &PromptMetadata, content: &str) -> Result<()> {
+        let path = Path::new("jkms").join(&metadata.file_path);
+        self.storage.write(&path, content)
     }
 }

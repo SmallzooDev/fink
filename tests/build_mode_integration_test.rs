@@ -56,8 +56,8 @@ type: "context"
         // Should now be in Build mode
         assert_eq!(*app.mode(), AppMode::Build);
         
-        // Build panel should be initialized
-        assert!(app.get_build_panel().is_some());
+        // Interactive build panel should be initialized
+        assert!(app.get_interactive_build_panel().is_some());
     }
     
     #[test]

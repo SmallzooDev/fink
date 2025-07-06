@@ -1,6 +1,5 @@
 use anyhow::Result;
 use std::path::{Path, PathBuf};
-use std::fs;
 use crate::application::models::PromptMetadata;
 
 pub struct FileSystem {
@@ -68,7 +67,10 @@ impl FileSystem {
                         // Update file to add type: "whole"
                         if let Ok(updated_content) = crate::utils::frontmatter::FrontmatterUpdater::ensure_type(&content, &name, type_option) {
                             // Write the updated content back to file
-                            if let Err(e) = fs::write(&path, updated_content) {
+                            // Calculate relative path from base_path
+                            let relative_path = path.strip_prefix(&self.base_path)
+                                .unwrap_or(&path);
+                            if let Err(e) = self.write(relative_path, &updated_content) {
                                 eprintln!("Warning: Failed to update type in {}: {}", file_name, e);
                             }
                         }

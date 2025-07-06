@@ -1,8 +1,8 @@
-use crate::utils::error::{Result, JkmsError, PromptError, ExternalError, StorageError};
+use crate::utils::error::{Result, JkmsError, PromptError, ExternalError};
 use crate::utils::frontmatter::FrontmatterUpdater;
 use crate::utils::templates::TemplateGenerator;
 use crate::utils::config::Config;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::cell::RefCell;
 use crate::application::models::{PromptMetadata, PromptFilter, SearchType, PromptType};
 use crate::application::repository::{PromptRepository, FileSystemRepository};
@@ -50,19 +50,10 @@ impl DefaultPromptApplication {
     }
     
     fn get_prompt_file_path(&self, metadata: &PromptMetadata) -> PathBuf {
-        Path::new(&self.repository.get_base_path())
+        self.repository
+            .get_base_path()
             .join("jkms")
             .join(&metadata.file_path)
-    }
-    
-    fn read_prompt_file(&self, path: &Path) -> Result<String> {
-        std::fs::read_to_string(path)
-            .map_err(|e| JkmsError::Storage(StorageError::Io(e)))
-    }
-    
-    fn write_prompt_file(&self, path: &Path, content: &str) -> Result<()> {
-        std::fs::write(path, content)
-            .map_err(|e| JkmsError::Storage(StorageError::Io(e)))
     }
 }
 
@@ -202,12 +193,11 @@ impl PromptApplication for DefaultPromptApplication {
 
     fn update_prompt_tags(&self, name: &str, tags: Vec<String>) -> Result<()> {
         let metadata = self.find_prompt_metadata(name)?;
-        let file_path = self.get_prompt_file_path(&metadata);
         
-        let content = self.read_prompt_file(&file_path)?;
+        let content = self.repository.read_prompt(&metadata)?;
         let updated_content = FrontmatterUpdater::update_tags(&content, name, &tags)?;
         
-        self.write_prompt_file(&file_path, &updated_content)?;
+        self.repository.write_prompt(&metadata, &updated_content)?;
         
         Ok(())
     }

@@ -46,13 +46,26 @@ Output format: JSON"#;
         app.reload_prompts().unwrap();
         app.enter_build_mode();
         
-        // Select all prompts
-        if let Some(build_panel) = app.get_build_panel_mut() {
-            build_panel.toggle_selection(); // Select first (instruction)
-            build_panel.next();
-            build_panel.toggle_selection(); // Select second (context)
-            build_panel.next();
-            build_panel.toggle_selection(); // Select third (output)
+        // Select prompts using interactive build panel
+        if let Some(panel) = app.get_interactive_build_panel_mut() {
+            // Select instruction prompt
+            panel.select_current(); // This will select the instruction prompt and move to next step
+            
+            // Select context prompt
+            panel.select_current(); // This will select the context prompt and move to next step
+            
+            // Skip input indicator
+            panel.select_current(); // Select "None" for input indicator
+            
+            // Select output prompt
+            panel.next(); // Move to the output prompt option
+            panel.select_current(); // Select the output prompt
+            
+            // Skip etc
+            panel.select_current(); // Select "None" for etc
+            
+            // Skip comment
+            panel.finish_comment(); // Skip adding comment
         }
         
         // Combine and copy
