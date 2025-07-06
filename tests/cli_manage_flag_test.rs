@@ -2,7 +2,7 @@ use assert_cmd::Command;
 
 #[test]
 fn should_accept_manage_flag_with_help() {
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("--help")
         .assert()
         .success()
@@ -18,7 +18,7 @@ fn should_not_conflict_with_subcommands() {
     let temp_dir = tempdir().unwrap();
     
     // Should be able to use list command without manage flag
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("list")
         .arg("--path")
         .arg(temp_dir.path())

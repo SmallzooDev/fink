@@ -1,4 +1,4 @@
-use crate::utils::error::{Result, JkmsError, PromptError, ExternalError};
+use crate::utils::error::{Result, FinkError, PromptError, ExternalError};
 use crate::utils::frontmatter::FrontmatterUpdater;
 use crate::utils::templates::TemplateGenerator;
 use crate::utils::config::Config;
@@ -45,14 +45,14 @@ impl DefaultPromptApplication {
     // Helper methods for cleaner code
     fn find_prompt_metadata(&self, name: &str) -> Result<PromptMetadata> {
         self.repository.find_by_name(name)
-            .map_err(|e| JkmsError::from(e))?
-            .ok_or_else(|| JkmsError::Prompt(PromptError::NotFound(name.to_string())))
+            .map_err(|e| FinkError::from(e))?
+            .ok_or_else(|| FinkError::Prompt(PromptError::NotFound(name.to_string())))
     }
     
     fn get_prompt_file_path(&self, metadata: &PromptMetadata) -> PathBuf {
         self.repository
             .get_base_path()
-            .join("jkms")
+            .join("fink")
             .join(&metadata.file_path)
     }
 }
@@ -60,7 +60,7 @@ impl DefaultPromptApplication {
 impl PromptApplication for DefaultPromptApplication {
     fn list_prompts(&self, filter: Option<PromptFilter>) -> Result<Vec<PromptMetadata>> {
         let mut prompts = self.repository.list_all()
-            .map_err(|e| JkmsError::from(e))?;
+            .map_err(|e| FinkError::from(e))?;
         
         if let Some(filter) = filter {
             if let Some(tags) = filter.tags {
@@ -75,19 +75,19 @@ impl PromptApplication for DefaultPromptApplication {
         let metadata = self.find_prompt_metadata(identifier)?;
         
         let content = self.repository.get_content(&metadata.file_path)
-            .map_err(|e| JkmsError::from(e))?;
+            .map_err(|e| FinkError::from(e))?;
         
         Ok((metadata, content))
     }
 
     fn copy_to_clipboard(&self, content: &str) -> Result<()> {
         self.clipboard.borrow_mut().copy(content)
-            .map_err(|e| JkmsError::External(ExternalError::ClipboardError(e.to_string())))
+            .map_err(|e| FinkError::External(ExternalError::ClipboardError(e.to_string())))
     }
 
     fn search_prompts(&self, query: &str, search_type: SearchType) -> Result<Vec<PromptMetadata>> {
         self.repository.search(query, search_type)
-            .map_err(|e| JkmsError::from(e))
+            .map_err(|e| FinkError::from(e))
     }
 
     fn create_prompt(&self, name: &str, template: Option<&str>) -> Result<()> {
@@ -95,14 +95,14 @@ impl PromptApplication for DefaultPromptApplication {
         
         // Check if prompt already exists
         if self.repository.prompt_exists(&normalized_name) {
-            return Err(JkmsError::Prompt(PromptError::AlreadyExists(name.to_string())));
+            return Err(FinkError::Prompt(PromptError::AlreadyExists(name.to_string())));
         }
         
         let content = TemplateGenerator::generate(name, template)?;
         
         // Create the prompt using repository
         self.repository.create_prompt(&normalized_name, &content)
-            .map_err(|e| JkmsError::from(e))?;
+            .map_err(|e| FinkError::from(e))?;
         Ok(())
     }
 
@@ -111,14 +111,14 @@ impl PromptApplication for DefaultPromptApplication {
         
         // Check if prompt already exists
         if self.repository.prompt_exists(&normalized_name) {
-            return Err(JkmsError::Prompt(PromptError::AlreadyExists(name.to_string())));
+            return Err(FinkError::Prompt(PromptError::AlreadyExists(name.to_string())));
         }
         
         let prompt_content = TemplateGenerator::generate_with_content(name, template, content.as_deref())?;
         
         // Create the prompt using repository
         self.repository.create_prompt(&normalized_name, &prompt_content)
-            .map_err(|e| JkmsError::from(e))?;
+            .map_err(|e| FinkError::from(e))?;
         Ok(())
     }
 
@@ -127,14 +127,14 @@ impl PromptApplication for DefaultPromptApplication {
         
         // Check if prompt already exists
         if self.repository.prompt_exists(&normalized_name) {
-            return Err(JkmsError::Prompt(PromptError::AlreadyExists(name.to_string())));
+            return Err(FinkError::Prompt(PromptError::AlreadyExists(name.to_string())));
         }
         
         let content = TemplateGenerator::generate_with_type(name, template, prompt_type)?;
         
         // Create the prompt using repository
         self.repository.create_prompt(&normalized_name, &content)
-            .map_err(|e| JkmsError::from(e))?;
+            .map_err(|e| FinkError::from(e))?;
         Ok(())
     }
 
@@ -143,14 +143,14 @@ impl PromptApplication for DefaultPromptApplication {
         
         // Check if prompt already exists
         if self.repository.prompt_exists(&normalized_name) {
-            return Err(JkmsError::Prompt(PromptError::AlreadyExists(name.to_string())));
+            return Err(FinkError::Prompt(PromptError::AlreadyExists(name.to_string())));
         }
         
         let prompt_content = TemplateGenerator::generate_with_content_and_type(name, template, content.as_deref(), prompt_type)?;
         
         // Create the prompt using repository
         self.repository.create_prompt(&normalized_name, &prompt_content)
-            .map_err(|e| JkmsError::from(e))?;
+            .map_err(|e| FinkError::from(e))?;
         Ok(())
     }
 
@@ -167,14 +167,14 @@ impl PromptApplication for DefaultPromptApplication {
         let metadata = self.find_prompt_metadata(name)?;
         
         if !force {
-            return Err(JkmsError::Validation(crate::utils::error::ValidationError::InvalidInput(
+            return Err(FinkError::Validation(crate::utils::error::ValidationError::InvalidInput(
                 "confirmation", 
                 "Deletion cancelled. Use --force to skip confirmation.".to_string()
             )));
         }
         
         self.repository.delete_prompt(&metadata.file_path)
-            .map_err(|e| JkmsError::from(e))
+            .map_err(|e| FinkError::from(e))
     }
 
     fn copy_prompt(&self, name: &str) -> Result<()> {
@@ -204,6 +204,6 @@ impl PromptApplication for DefaultPromptApplication {
     
     fn get_clipboard_content(&self) -> Result<String> {
         self.clipboard.borrow_mut().get_content()
-            .map_err(|e| JkmsError::External(ExternalError::ClipboardError(e.to_string())))
+            .map_err(|e| FinkError::External(ExternalError::ClipboardError(e.to_string())))
     }
 }

@@ -1,15 +1,15 @@
 #!/bin/bash
 
-# Script to generate test prompts for jkms
-# Usage: ./generate_test_prompts.sh [path_to_jkms_directory]
+# Script to generate test prompts for fink
+# Usage: ./generate_test_prompts.sh [path_to_fink_directory]
 
-JKMS_DIR="${1:-$HOME/.jkms/jkms}"
+FINK_DIR="${1:-$HOME/.fink/fink}"
 
-echo "Creating test prompts in: $JKMS_DIR"
-mkdir -p "$JKMS_DIR"
+echo "Creating test prompts in: $FINK_DIR"
+mkdir -p "$FINK_DIR"
 
 # Instruction type prompts
-cat > "$JKMS_DIR/code-reviewer.md" << 'EOF'
+cat > "$FINK_DIR/code-reviewer.md" << 'EOF'
 ---
 name: "code-reviewer"
 tags: ["code", "review", "analysis"]
@@ -25,7 +25,7 @@ You are an experienced software engineer conducting a thorough code review. Focu
 Provide constructive feedback with specific examples and suggestions for improvement.
 EOF
 
-cat > "$JKMS_DIR/teacher-assistant.md" << 'EOF'
+cat > "$FINK_DIR/teacher-assistant.md" << 'EOF'
 ---
 name: "teacher-assistant"
 tags: ["education", "teaching", "explanation"]
@@ -39,7 +39,7 @@ You are a patient and knowledgeable teaching assistant. Your role is to:
 - Provide step-by-step guidance when needed
 EOF
 
-cat > "$JKMS_DIR/technical-writer.md" << 'EOF'
+cat > "$FINK_DIR/technical-writer.md" << 'EOF'
 ---
 name: "technical-writer"
 tags: ["documentation", "writing", "technical"]
@@ -54,7 +54,7 @@ You are a professional technical writer specializing in clear, concise documenta
 EOF
 
 # Context type prompts
-cat > "$JKMS_DIR/rust-project-context.md" << 'EOF'
+cat > "$FINK_DIR/rust-project-context.md" << 'EOF'
 ---
 name: "rust-project-context"
 tags: ["rust", "project", "development"]
@@ -68,7 +68,7 @@ Context: Working on a Rust CLI application that:
 - Targets cross-platform compatibility (Windows, macOS, Linux)
 EOF
 
-cat > "$JKMS_DIR/startup-context.md" << 'EOF'
+cat > "$FINK_DIR/startup-context.md" << 'EOF'
 ---
 name: "startup-context"
 tags: ["startup", "business", "agile"]
@@ -82,7 +82,7 @@ Context: Early-stage startup environment where:
 - Focus on delivering user value quickly
 EOF
 
-cat > "$JKMS_DIR/legacy-system-context.md" << 'EOF'
+cat > "$FINK_DIR/legacy-system-context.md" << 'EOF'
 ---
 name: "legacy-system-context"
 tags: ["legacy", "refactoring", "maintenance"]
@@ -97,7 +97,7 @@ Context: Maintaining and modernizing a legacy system that:
 EOF
 
 # Input indicator prompts
-cat > "$JKMS_DIR/code-input-indicator.md" << 'EOF'
+cat > "$FINK_DIR/code-input-indicator.md" << 'EOF'
 ---
 name: "code-input-indicator"
 tags: ["input", "code", "format"]
@@ -112,7 +112,7 @@ type: "input_indicator"
 [Optional: What specific aspects would you like reviewed or explained?]
 EOF
 
-cat > "$JKMS_DIR/user-story-input.md" << 'EOF'
+cat > "$FINK_DIR/user-story-input.md" << 'EOF'
 ---
 name: "user-story-input"
 tags: ["input", "requirements", "user-story"]
@@ -132,7 +132,7 @@ So that [benefit/value]
 [Any additional information, constraints, or technical requirements]
 EOF
 
-cat > "$JKMS_DIR/error-input-indicator.md" << 'EOF'
+cat > "$FINK_DIR/error-input-indicator.md" << 'EOF'
 ---
 name: "error-input-indicator"
 tags: ["input", "error", "debugging"]
@@ -159,7 +159,7 @@ type: "input_indicator"
 EOF
 
 # Output indicator prompts
-cat > "$JKMS_DIR/structured-analysis-output.md" << 'EOF'
+cat > "$FINK_DIR/structured-analysis-output.md" << 'EOF'
 ---
 name: "structured-analysis-output"
 tags: ["output", "analysis", "structured"]
@@ -189,7 +189,7 @@ Please provide your response in the following format:
 ```
 EOF
 
-cat > "$JKMS_DIR/json-output-format.md" << 'EOF'
+cat > "$FINK_DIR/json-output-format.md" << 'EOF'
 ---
 name: "json-output-format"
 tags: ["output", "json", "api"]
@@ -224,7 +224,7 @@ Provide the response in the following JSON format:
 ```
 EOF
 
-cat > "$JKMS_DIR/markdown-report-output.md" << 'EOF'
+cat > "$FINK_DIR/markdown-report-output.md" << 'EOF'
 ---
 name: "markdown-report-output"
 tags: ["output", "markdown", "report"]
@@ -258,7 +258,7 @@ Format your response as a Markdown report:
 EOF
 
 # Etc type prompts (utilities and helpers)
-cat > "$JKMS_DIR/thinking-process.md" << 'EOF'
+cat > "$FINK_DIR/thinking-process.md" << 'EOF'
 ---
 name: "thinking-process"
 tags: ["utility", "thinking", "reasoning"]
@@ -275,7 +275,7 @@ Before providing the final answer, please think through the problem step by step
 Show your reasoning process before giving the final answer.
 EOF
 
-cat > "$JKMS_DIR/constraints-reminder.md" << 'EOF'
+cat > "$FINK_DIR/constraints-reminder.md" << 'EOF'
 ---
 name: "constraints-reminder"
 tags: ["utility", "constraints", "requirements"]
@@ -290,7 +290,7 @@ Please ensure your response adheres to these constraints:
 - Follow the principle of least surprise
 EOF
 
-cat > "$JKMS_DIR/examples-request.md" << 'EOF'
+cat > "$FINK_DIR/examples-request.md" << 'EOF'
 ---
 name: "examples-request"
 tags: ["utility", "examples", "clarification"]

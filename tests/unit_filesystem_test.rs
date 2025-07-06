@@ -5,7 +5,7 @@ use tempfile::tempdir;
 fn should_list_prompts_from_directory() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     fs::create_dir(&prompts_dir).unwrap();
 
     // Create test prompt files
@@ -21,7 +21,7 @@ This is a test prompt."#;
     fs::write(prompts_dir.join("test2.md"), "# Test Prompt 2").unwrap();
 
     // Act
-    let storage = jkms::storage::FileSystem::new(temp_dir.path().to_path_buf());
+    let storage = fink::storage::FileSystem::new(temp_dir.path().to_path_buf());
     let prompts = storage.list_prompts().unwrap();
 
     // Assert

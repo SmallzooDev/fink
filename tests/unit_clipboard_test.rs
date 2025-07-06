@@ -1,12 +1,12 @@
-use jkms::application::repository::{FileSystemRepository, PromptRepository};
-use jkms::storage::FileSystem;
+use fink::application::repository::{FileSystemRepository, PromptRepository};
+use fink::storage::FileSystem;
 use tempfile::tempdir;
 
 #[test]
 fn should_get_prompt_content_for_clipboard() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     let prompt_content = r#"---

@@ -1,4 +1,4 @@
-use jkms::presentation::tui::components::confirmation_dialog::{ConfirmationDialog, ConfirmationAction};
+use fink::presentation::tui::components::confirmation_dialog::{ConfirmationDialog, ConfirmationAction};
 use ratatui::Terminal;
 use ratatui::backend::TestBackend;
 

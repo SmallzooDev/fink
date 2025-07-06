@@ -1,4 +1,4 @@
-use jkms::utils::config::Config;
+use fink::utils::config::Config;
 use tempfile::TempDir;
 use std::fs;
 
@@ -12,13 +12,13 @@ fn should_have_default_editor() {
 fn should_have_default_storage_path() {
     let config = Config::default();
     let storage_path = config.storage_path();
-    assert!(storage_path.ends_with(".jkms"));
+    assert!(storage_path.ends_with(".fink"));
 }
 
 #[test]
 fn should_have_default_config_path() {
     let config_path = Config::default_config_path();
-    assert!(config_path.ends_with(".config/jkms/config.toml"));
+    assert!(config_path.ends_with(".config/fink/config.toml"));
 }
 
 #[test]
@@ -69,7 +69,7 @@ fn should_load_or_create_default_config() {
     // First time - should create default
     let config = Config::load_or_create(&config_file).unwrap();
     assert_eq!(config.editor(), "vim");
-    assert!(config.storage_path().ends_with(".jkms"));
+    assert!(config.storage_path().ends_with(".fink"));
     
     // File should be created
     assert!(config_file.exists());

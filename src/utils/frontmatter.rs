@@ -1,4 +1,4 @@
-use crate::utils::error::{Result, JkmsError, StorageError};
+use crate::utils::error::{Result, FinkError, StorageError};
 use crate::application::models::PromptType;
 
 const FRONTMATTER_DELIMITER: &str = "---\n";
@@ -28,7 +28,7 @@ impl FrontmatterUpdater {
         let parts: Vec<&str> = content.splitn(3, FRONTMATTER_DELIMITER).collect();
         
         if parts.len() < 3 {
-            return Err(JkmsError::Storage(StorageError::ParseError(
+            return Err(FinkError::Storage(StorageError::ParseError(
                 "Invalid frontmatter format".to_string()
             )));
         }
@@ -90,7 +90,7 @@ impl FrontmatterUpdater {
         let parts: Vec<&str> = content.splitn(3, FRONTMATTER_DELIMITER).collect();
         
         if parts.len() < 3 {
-            return Err(JkmsError::Storage(StorageError::ParseError(
+            return Err(FinkError::Storage(StorageError::ParseError(
                 "Invalid frontmatter format".to_string()
             )));
         }

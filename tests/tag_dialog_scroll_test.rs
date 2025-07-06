@@ -1,5 +1,5 @@
-use jkms::presentation::tui::components::TagManagementDialog;
-use jkms::presentation::tui::components::TagFilterDialog;
+use fink::presentation::tui::components::TagManagementDialog;
+use fink::presentation::tui::components::TagFilterDialog;
 
 #[test]
 fn test_tag_management_dialog_scroll() {

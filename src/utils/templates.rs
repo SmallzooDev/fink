@@ -1,4 +1,4 @@
-use crate::utils::error::{Result, JkmsError, PromptError};
+use crate::utils::error::{Result, FinkError, PromptError};
 use crate::application::models::PromptType;
 
 pub struct TemplateGenerator;
@@ -15,7 +15,7 @@ impl TemplateGenerator {
             Some("basic") => Ok(Self::generate_basic_template_with_type(name, prompt_type)),
             Some("clipboard") => Ok(Self::generate_clipboard_template_with_type(name, prompt_type)),
             Some(template_name) => {
-                Err(JkmsError::Prompt(PromptError::InvalidFormat(
+                Err(FinkError::Prompt(PromptError::InvalidFormat(
                     format!("Unknown template: {}", template_name)
                 )))
             }

@@ -1,6 +1,6 @@
 use std::path::Path;
 use std::process::Command;
-use crate::utils::error::{Result, JkmsError, ExternalError};
+use crate::utils::error::{Result, FinkError, ExternalError};
 
 pub struct EditorLauncher {
     config_editor: Option<String>,
@@ -49,12 +49,12 @@ impl EditorLauncher {
         let editor = self.get_editor();
         let status = self.create_command(file_path)
             .status()
-            .map_err(|e| JkmsError::External(ExternalError::EditorError(
+            .map_err(|e| FinkError::External(ExternalError::EditorError(
                 format!("Failed to launch editor '{}': {}", editor, e)
             )))?;
         
         if !status.success() {
-            return Err(JkmsError::External(ExternalError::EditorError(
+            return Err(FinkError::External(ExternalError::EditorError(
                 format!("Editor '{}' exited with non-zero status", editor)
             )));
         }

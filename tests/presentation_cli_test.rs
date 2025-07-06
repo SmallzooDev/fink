@@ -3,7 +3,7 @@ use predicates::prelude::*;
 
 #[test]
 fn should_display_version_when_version_flag_provided() {
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("--version")
         .assert()
         .success()

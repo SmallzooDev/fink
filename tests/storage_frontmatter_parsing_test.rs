@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use jkms::application::models::PromptType;
+    use fink::application::models::PromptType;
     
     #[test]
     fn should_extract_type_from_frontmatter() {
@@ -12,7 +12,7 @@ type: "instruction"
 
 # Test Content"#;
 
-        let prompt_type = jkms::storage::extract_type_from_content(content);
+        let prompt_type = fink::storage::extract_type_from_content(content);
         assert_eq!(prompt_type, Some(PromptType::Instruction));
     }
 
@@ -25,7 +25,7 @@ tags: ["test"]
 
 # Test Content"#;
 
-        let prompt_type = jkms::storage::extract_type_from_content(content);
+        let prompt_type = fink::storage::extract_type_from_content(content);
         assert_eq!(prompt_type, None);
     }
 
@@ -46,7 +46,7 @@ type: "{}"
 ---
 Content"#, type_str);
 
-            let prompt_type = jkms::storage::extract_type_from_content(&content);
+            let prompt_type = fink::storage::extract_type_from_content(&content);
             assert_eq!(prompt_type, Some(expected));
         }
     }
@@ -59,7 +59,7 @@ type: "invalid_type"
 ---
 Content"#;
 
-        let prompt_type = jkms::storage::extract_type_from_content(&content);
+        let prompt_type = fink::storage::extract_type_from_content(&content);
         assert_eq!(prompt_type, None);
     }
 }

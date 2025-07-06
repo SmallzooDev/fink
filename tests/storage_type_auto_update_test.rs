@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use jkms::application::models::PromptType;
-    use jkms::utils::frontmatter::FrontmatterUpdater;
+    use fink::application::models::PromptType;
+    use fink::utils::frontmatter::FrontmatterUpdater;
     use std::fs;
     use std::path::PathBuf;
     use tempfile::TempDir;
@@ -55,10 +55,10 @@ type: "instruction"
 
     #[test]
     fn should_auto_update_files_on_list() {
-        use jkms::storage::FileSystem;
+        use fink::storage::FileSystem;
 
         let temp_dir = TempDir::new().unwrap();
-        let jkms_dir = temp_dir.path().join("jkms");
+        let jkms_dir = temp_dir.path().join("fink");
         fs::create_dir_all(&jkms_dir).unwrap();
         
         let prompt_path = jkms_dir.join("test-prompt.md");

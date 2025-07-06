@@ -1,5 +1,5 @@
-use jkms::presentation::tui::tui::TUIApp;
-use jkms::presentation::tui::components::{CreateDialog, CreateTemplate};
+use fink::presentation::tui::tui::TUIApp;
+use fink::presentation::tui::components::{CreateDialog, CreateTemplate};
 use tempfile::tempdir;
 use std::fs;
 
@@ -10,7 +10,7 @@ fn test_create_dialog_integration() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("jkms");
+    let jkms_path = temp_path.join("fink");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create TUIApp
@@ -31,7 +31,7 @@ fn test_create_prompt_with_dialog() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("jkms");
+    let jkms_path = temp_path.join("fink");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create TUIApp
@@ -77,7 +77,7 @@ fn test_create_prompt_with_template() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("jkms");
+    let jkms_path = temp_path.join("fink");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create TUIApp
@@ -140,7 +140,7 @@ fn test_create_dialog_with_type_selection() {
     // Verify the state
     assert_eq!(dialog.get_normalized_filename(), "test");
     assert_eq!(dialog.get_template(), CreateTemplate::FromClipboard);
-    assert_eq!(dialog.get_prompt_type(), jkms::application::models::PromptType::Context);
+    assert_eq!(dialog.get_prompt_type(), fink::application::models::PromptType::Context);
     assert!(dialog.is_valid());
 }
 
@@ -151,7 +151,7 @@ fn test_create_prompt_with_specific_type() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("jkms");
+    let jkms_path = temp_path.join("fink");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create TUIApp
@@ -201,7 +201,7 @@ fn test_cancel_create_dialog() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("jkms");
+    let jkms_path = temp_path.join("fink");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create TUIApp

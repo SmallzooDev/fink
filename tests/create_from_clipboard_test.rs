@@ -1,6 +1,6 @@
-use jkms::presentation::tui::components::{CreateDialog, CreateTemplate};
-use jkms::application::application::DefaultPromptApplication;
-use jkms::application::traits::PromptApplication;
+use fink::presentation::tui::components::{CreateDialog, CreateTemplate};
+use fink::application::application::DefaultPromptApplication;
+use fink::application::traits::PromptApplication;
 use tempfile::tempdir;
 use std::fs;
 
@@ -11,7 +11,7 @@ fn test_create_from_clipboard_template() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("jkms");
+    let jkms_path = temp_path.join("fink");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create application

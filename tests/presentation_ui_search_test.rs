@@ -1,5 +1,5 @@
-use jkms::presentation::tui::tui::{AppMode, TUIApp};
-use jkms::presentation::tui::components::search::HighlightedText;
+use fink::presentation::tui::tui::{AppMode, TUIApp};
+use fink::presentation::tui::components::search::HighlightedText;
 use tempfile::tempdir;
 use std::fs;
 
@@ -47,7 +47,7 @@ fn test_search_filtering_by_name() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("jkms");
+    let jkms_path = temp_path.join("fink");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create test prompt files

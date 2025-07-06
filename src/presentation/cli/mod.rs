@@ -1,11 +1,11 @@
 use crate::application::application::DefaultPromptApplication;
 use crate::application::traits::PromptApplication;
 use anyhow::Result;
-use crate::utils::error::JkmsError;
+use crate::utils::error::FinkError;
 use crate::utils::config::Config;
 use clap::Subcommand;
 
-fn handle_error(error: JkmsError) -> ! {
+fn handle_error(error: FinkError) -> ! {
     eprintln!("Error: {}", error);
     
     // Show user-friendly message if available

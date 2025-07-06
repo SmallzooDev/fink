@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use jkms::application::models::{PromptMetadata, PromptType};
+    use fink::application::models::{PromptMetadata, PromptType};
 
     #[test]
     fn should_create_prompt_metadata_with_type() {

@@ -1,4 +1,4 @@
-use jkms::presentation::tui::tui::TUIApp;
+use fink::presentation::tui::tui::TUIApp;
 use tempfile::tempdir;
 use std::fs;
 
@@ -9,7 +9,7 @@ fn test_add_tag_to_prompt() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("jkms");
+    let jkms_path = temp_path.join("fink");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create a test prompt file
@@ -46,7 +46,7 @@ fn test_remove_tag_from_prompt() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("jkms");
+    let jkms_path = temp_path.join("fink");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create a test prompt file
@@ -80,7 +80,7 @@ fn test_add_duplicate_tag() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("jkms");
+    let jkms_path = temp_path.join("fink");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create a test prompt file
@@ -110,7 +110,7 @@ fn test_remove_nonexistent_tag() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("jkms");
+    let jkms_path = temp_path.join("fink");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create a test prompt file
@@ -140,7 +140,7 @@ fn test_tag_persistence() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("jkms");
+    let jkms_path = temp_path.join("fink");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create a test prompt file
@@ -180,7 +180,7 @@ fn test_tag_management_dialog() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("jkms");
+    let jkms_path = temp_path.join("fink");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create a test prompt file

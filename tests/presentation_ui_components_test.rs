@@ -1,5 +1,5 @@
-use jkms::application::models::{PromptMetadata, PromptType};
-use jkms::presentation::tui::components::PromptList;
+use fink::application::models::{PromptMetadata, PromptType};
+use fink::presentation::tui::components::PromptList;
 
 #[test]
 fn should_create_prompt_list_component() {

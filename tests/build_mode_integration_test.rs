@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use jkms::presentation::tui::tui::{TUIApp, AppMode};
-    use jkms::presentation::tui::runner::EventHandler;
+    use fink::presentation::tui::tui::{TUIApp, AppMode};
+    use fink::presentation::tui::runner::EventHandler;
     use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
     use tempfile::tempdir;
     use std::fs;
@@ -13,7 +13,7 @@ mod tests {
         let temp_path = temp_dir.path().to_path_buf();
         
         // Create jkms directory
-        let jkms_path = temp_path.join("jkms");
+        let jkms_path = temp_path.join("fink");
         fs::create_dir_all(&jkms_path).unwrap();
         
         // Create some test prompts with different types
@@ -67,7 +67,7 @@ type: "context"
         let temp_path = temp_dir.path().to_path_buf();
         
         // Create jkms directory
-        let jkms_path = temp_path.join("jkms");
+        let jkms_path = temp_path.join("fink");
         fs::create_dir_all(&jkms_path).unwrap();
         
         // Create TUIApp and enter build mode
@@ -103,7 +103,7 @@ type: "context"
         let temp_path = temp_dir.path().to_path_buf();
         
         // Create jkms directory
-        let jkms_path = temp_path.join("jkms");
+        let jkms_path = temp_path.join("fink");
         fs::create_dir_all(&jkms_path).unwrap();
         
         // Create multiple prompts

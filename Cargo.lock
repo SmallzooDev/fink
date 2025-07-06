@@ -470,6 +470,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "fink"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "assert_cmd",
+ "chrono",
+ "clap",
+ "clipboard",
+ "crossterm",
+ "dirs",
+ "gray_matter",
+ "notify",
+ "predicates",
+ "ratatui",
+ "serde",
+ "sha2",
+ "similar",
+ "tempfile",
+ "thiserror",
+ "tokio",
+ "toml 0.8.23",
+]
+
+[[package]]
 name = "float-cmp"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -666,30 +690,6 @@ name = "itoa"
 version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c"
-
-[[package]]
-name = "jkms"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "assert_cmd",
- "chrono",
- "clap",
- "clipboard",
- "crossterm",
- "dirs",
- "gray_matter",
- "notify",
- "predicates",
- "ratatui",
- "serde",
- "sha2",
- "similar",
- "tempfile",
- "thiserror",
- "tokio",
- "toml 0.8.23",
-]
 
 [[package]]
 name = "js-sys"

@@ -1,4 +1,4 @@
-use jkms::external::editor::EditorLauncher;
+use fink::external::editor::EditorLauncher;
 use std::env;
 use tempfile::NamedTempFile;
 

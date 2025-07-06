@@ -43,7 +43,7 @@ impl PromptRepository for FileSystemRepository {
     }
 
     fn get_content(&self, file_path: &str) -> Result<String> {
-        let relative_path = Path::new("jkms").join(file_path);
+        let relative_path = Path::new("fink").join(file_path);
         let content = self.storage.read_to_string(&relative_path)?;
         
         // Extract content after frontmatter
@@ -86,7 +86,7 @@ impl PromptRepository for FileSystemRepository {
     }
 
     fn create_prompt(&self, name: &str, content: &str) -> Result<()> {
-        let prompts_dir = Path::new("jkms");
+        let prompts_dir = Path::new("fink");
         self.storage.create_dir_all(prompts_dir)?;
         
         let file_name = format!("{}.md", name);
@@ -98,7 +98,7 @@ impl PromptRepository for FileSystemRepository {
 
     fn prompt_exists(&self, name: &str) -> bool {
         let file_name = format!("{}.md", name);
-        let file_path = Path::new("jkms").join(&file_name);
+        let file_path = Path::new("fink").join(&file_name);
         self.storage.exists(&file_path)
     }
 
@@ -112,18 +112,18 @@ impl PromptRepository for FileSystemRepository {
     }
 
     fn delete_prompt(&self, file_path: &str) -> Result<()> {
-        let full_path = Path::new("jkms").join(file_path);
+        let full_path = Path::new("fink").join(file_path);
         self.storage.delete(&full_path)?;
         Ok(())
     }
 
     fn read_prompt(&self, metadata: &PromptMetadata) -> Result<String> {
-        let path = Path::new("jkms").join(&metadata.file_path);
+        let path = Path::new("fink").join(&metadata.file_path);
         self.storage.read_to_string(&path)
     }
 
     fn write_prompt(&self, metadata: &PromptMetadata, content: &str) -> Result<()> {
-        let path = Path::new("jkms").join(&metadata.file_path);
+        let path = Path::new("fink").join(&metadata.file_path);
         self.storage.write(&path, content)
     }
 }

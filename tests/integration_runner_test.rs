@@ -1,11 +1,11 @@
-use jkms::presentation::tui::runner::run_app;
+use fink::presentation::tui::runner::run_app;
 use tempfile::tempdir;
 
 #[test]
 fn should_create_app_runner() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     std::fs::write(prompts_dir.join("test.md"), "# Test").unwrap();

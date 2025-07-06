@@ -42,7 +42,7 @@ impl FileSystem {
     }
 
     pub fn list_prompts(&self) -> Result<Vec<PromptMetadata>> {
-        let prompts_dir = self.base_path.join("jkms");
+        let prompts_dir = self.base_path.join("fink");
         let mut prompts = Vec::new();
 
         if prompts_dir.exists() {

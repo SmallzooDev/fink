@@ -6,7 +6,7 @@ use tempfile::tempdir;
 fn should_list_prompts_with_list_command() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     let prompt1 = r#"---
@@ -25,7 +25,7 @@ tags: ["bug", "issue"]
     std::fs::write(prompts_dir.join("bug-report.md"), prompt2).unwrap();
 
     // Act & Assert
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("list")
         .arg("--path")
         .arg(temp_dir.path())
@@ -43,7 +43,7 @@ fn should_handle_empty_directory_with_list_command() {
     let temp_dir = tempdir().unwrap();
 
     // Act & Assert
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("list")
         .arg("--path")
         .arg(temp_dir.path())
@@ -56,7 +56,7 @@ fn should_handle_empty_directory_with_list_command() {
 fn should_get_prompt_content_by_name() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     let prompt = r#"---
@@ -70,7 +70,7 @@ This is the code review template content."#;
     std::fs::write(prompts_dir.join("code-review.md"), prompt).unwrap();
 
     // Act & Assert
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("get")
         .arg("code-review")
         .arg("--path")
@@ -89,7 +89,7 @@ fn should_handle_nonexistent_prompt() {
     let temp_dir = tempdir().unwrap();
 
     // Act & Assert
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("get")
         .arg("nonexistent")
         .arg("--path")
@@ -103,11 +103,11 @@ fn should_handle_nonexistent_prompt() {
 fn should_create_new_prompt_with_create_command() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     // Act & Assert
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("create")
         .arg("test-prompt")
         .arg("--path")
@@ -128,11 +128,11 @@ fn should_create_new_prompt_with_create_command() {
 fn should_create_prompt_with_template() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     // Act & Assert
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("create")
         .arg("new-prompt")
         .arg("--template")
@@ -159,7 +159,7 @@ fn should_create_prompt_with_template() {
 fn should_fail_when_creating_duplicate_prompt() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     // Create an existing prompt
@@ -171,7 +171,7 @@ tags: []
     std::fs::write(prompts_dir.join("existing.md"), existing_content).unwrap();
 
     // Act & Assert
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("create")
         .arg("existing")
         .arg("--path")
@@ -185,11 +185,11 @@ tags: []
 fn should_fail_when_template_not_found() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     // Act & Assert
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("create")
         .arg("new-prompt")
         .arg("--template")
@@ -205,7 +205,7 @@ fn should_fail_when_template_not_found() {
 fn should_edit_prompt_with_external_editor() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     let original_content = r#"---
@@ -233,7 +233,7 @@ tags: ["test", "edited"]
     }
     
     // Act & Assert
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("edit")
         .arg("test-prompt")
         .arg("--path")
@@ -254,7 +254,7 @@ fn should_fail_when_editing_nonexistent_prompt() {
     let temp_dir = tempdir().unwrap();
     
     // Act & Assert
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("edit")
         .arg("nonexistent")
         .arg("--path")
@@ -268,7 +268,7 @@ fn should_fail_when_editing_nonexistent_prompt() {
 fn should_delete_prompt_with_force_flag() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     let prompt_content = r#"---
@@ -281,7 +281,7 @@ tags: ["test"]
     std::fs::write(&prompt_file, prompt_content).unwrap();
     
     // Act & Assert
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("delete")
         .arg("test-prompt")
         .arg("--force")
@@ -298,7 +298,7 @@ tags: ["test"]
 fn should_require_force_flag_for_deletion() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     let prompt_content = r#"---
@@ -311,7 +311,7 @@ tags: ["test"]
     std::fs::write(&prompt_file, prompt_content).unwrap();
     
     // Act & Assert
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("delete")
         .arg("test-prompt")
         .arg("--path")
@@ -330,7 +330,7 @@ fn should_fail_when_deleting_nonexistent_prompt() {
     let temp_dir = tempdir().unwrap();
     
     // Act & Assert
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("delete")
         .arg("nonexistent")
         .arg("--force")
@@ -345,7 +345,7 @@ fn should_fail_when_deleting_nonexistent_prompt() {
 fn should_copy_prompt_to_clipboard() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     let prompt_content = r#"---
@@ -358,7 +358,7 @@ This is the prompt content to copy."#;
     std::fs::write(prompts_dir.join("test-prompt.md"), prompt_content).unwrap();
     
     // Act & Assert
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("copy")
         .arg("test-prompt")
         .arg("--path")
@@ -374,7 +374,7 @@ fn should_fail_when_copying_nonexistent_prompt() {
     let temp_dir = tempdir().unwrap();
     
     // Act & Assert
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("copy")
         .arg("nonexistent")
         .arg("--path")
@@ -388,7 +388,7 @@ fn should_fail_when_copying_nonexistent_prompt() {
 fn should_search_prompts_by_name() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     let prompt1 = r#"---
@@ -414,7 +414,7 @@ tags: ["docs", "writing"]
     std::fs::write(prompts_dir.join("documentation.md"), prompt3).unwrap();
     
     // Act & Assert
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("search")
         .arg("review")
         .arg("--path")
@@ -431,7 +431,7 @@ tags: ["docs", "writing"]
 fn should_search_prompts_by_tag() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     let prompt1 = r#"---
@@ -450,7 +450,7 @@ tags: ["bug", "code"]
     std::fs::write(prompts_dir.join("bug-report.md"), prompt2).unwrap();
     
     // Act & Assert
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("search")
         .arg("code")
         .arg("--path")
@@ -465,7 +465,7 @@ tags: ["bug", "code"]
 fn should_show_message_when_no_search_results() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     let prompt = r#"---
@@ -477,7 +477,7 @@ tags: ["test"]
     std::fs::write(prompts_dir.join("test.md"), prompt).unwrap();
     
     // Act & Assert
-    let mut cmd = Command::cargo_bin("jkms").unwrap();
+    let mut cmd = Command::cargo_bin("fink").unwrap();
     cmd.arg("search")
         .arg("nonexistent")
         .arg("--path")

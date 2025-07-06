@@ -1,7 +1,7 @@
 use clap::Parser;
-use jkms::presentation::cli::{Commands, execute_command};
-use jkms::presentation::tui::runner::{run, run_manage_mode};
-use jkms::utils::config::Config;
+use fink::presentation::cli::{Commands, execute_command};
+use fink::presentation::tui::runner::{run, run_manage_mode};
+use fink::utils::config::Config;
 use std::path::PathBuf;
 
 #[derive(Parser)]

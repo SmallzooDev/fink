@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use jkms::presentation::tui::tui::TUIApp;
-    use jkms::presentation::tui::components::BuildStep;
-    use jkms::application::models::PromptType;
+    use fink::presentation::tui::tui::TUIApp;
+    use fink::presentation::tui::components::BuildStep;
+    use fink::application::models::PromptType;
     use tempfile::tempdir;
     use std::fs;
 
@@ -13,7 +13,7 @@ mod tests {
         let temp_path = temp_dir.path().to_path_buf();
         
         // Create jkms directory
-        let jkms_path = temp_path.join("jkms");
+        let jkms_path = temp_path.join("fink");
         fs::create_dir_all(&jkms_path).unwrap();
         
         // Create prompts of different types
@@ -73,7 +73,7 @@ Context information here."#;
         let temp_path = temp_dir.path().to_path_buf();
         
         // Create jkms directory
-        let jkms_path = temp_path.join("jkms");
+        let jkms_path = temp_path.join("fink");
         fs::create_dir_all(&jkms_path).unwrap();
         
         // Create a simple prompt
@@ -124,7 +124,7 @@ Test content"#;
         let temp_path = temp_dir.path().to_path_buf();
         
         // Create jkms directory
-        let jkms_path = temp_path.join("jkms");
+        let jkms_path = temp_path.join("fink");
         fs::create_dir_all(&jkms_path).unwrap();
         
         // Create prompts

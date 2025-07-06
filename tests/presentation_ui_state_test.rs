@@ -1,6 +1,6 @@
-use jkms::presentation::tui::state::{UIState, UIEvent, Direction};
-use jkms::presentation::tui::tui::AppMode;
-use jkms::presentation::tui::components::confirmation_dialog::ConfirmationAction;
+use fink::presentation::tui::state::{UIState, UIEvent, Direction};
+use fink::presentation::tui::tui::AppMode;
+use fink::presentation::tui::components::confirmation_dialog::ConfirmationAction;
 
 #[test]
 fn ui_state_should_handle_navigation() {
@@ -114,7 +114,7 @@ fn ui_state_should_emit_commands() {
     assert!(command.is_some());
     
     match command.unwrap() {
-        jkms::presentation::tui::state::AppCommand::DeletePrompt(name) => {
+        fink::presentation::tui::state::AppCommand::DeletePrompt(name) => {
             assert_eq!(name, "prompt1");
         }
         _ => panic!("Expected DeletePrompt command"),

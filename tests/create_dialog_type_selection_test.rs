@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use jkms::presentation::tui::components::{CreateDialog, DialogField};
-    use jkms::application::models::PromptType;
+    use fink::presentation::tui::components::{CreateDialog, DialogField};
+    use fink::application::models::PromptType;
 
     #[test]
     fn should_have_type_field_in_dialog() {

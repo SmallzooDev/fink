@@ -1,4 +1,4 @@
-use jkms::external::ClipboardManager;
+use fink::external::ClipboardManager;
 
 #[test]
 fn should_copy_text_to_clipboard() {

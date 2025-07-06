@@ -1,5 +1,5 @@
-use jkms::presentation::tui::components::CreateDialog;
-use jkms::presentation::tui::components::{DialogField, CreateTemplate};
+use fink::presentation::tui::components::CreateDialog;
+use fink::presentation::tui::components::{DialogField, CreateTemplate};
 
 #[test]
 fn test_create_dialog_initialization() {

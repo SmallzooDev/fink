@@ -1,5 +1,5 @@
-use jkms::presentation::tui::screens::QuickSelectScreen;
-use jkms::presentation::tui::tui::{TUIApp, AppMode};
+use fink::presentation::tui::screens::QuickSelectScreen;
+use fink::presentation::tui::tui::{TUIApp, AppMode};
 use ratatui::Terminal;
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
@@ -9,7 +9,7 @@ use tempfile::tempdir;
 fn should_render_quick_select_screen() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     std::fs::write(prompts_dir.join("test1.md"), "# Test 1").unwrap();
@@ -33,7 +33,7 @@ fn should_render_quick_select_screen() {
     let buffer = terminal.backend().buffer();
     let content = buffer_to_string(buffer);
 
-    assert!(content.contains("jkms Manager"));
+    assert!(content.contains("fink Manager"));
     assert!(content.contains("test1"));
     assert!(content.contains("test2"));
 }
@@ -54,7 +54,7 @@ fn buffer_to_string(buffer: &Buffer) -> String {
 fn should_render_preview_pane_in_management_mode() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     let content = r#"---
@@ -101,7 +101,7 @@ And shows in preview."#;
 fn should_show_preview_metadata_in_management_mode() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     let content1 = r#"---
@@ -151,7 +151,7 @@ Second content."#;
 fn should_show_preview_pane_in_quick_select_mode() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     let content = r#"---
@@ -197,7 +197,7 @@ It should appear in the preview pane."#;
 fn should_render_confirmation_dialog() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("jkms");
+    let prompts_dir = temp_dir.path().join("fink");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     let content = r#"---

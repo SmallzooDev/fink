@@ -25,7 +25,7 @@ impl<'a> BuildScreen<'a> {
             .split(area);
         
         // Header
-        let header = Paragraph::new("jkms Manager - Build Mode")
+        let header = Paragraph::new("fink Manager - Build Mode")
             .style(Style::default().fg(Color::Cyan))
             .block(Block::default().borders(Borders::ALL));
         f.render_widget(header, chunks[0]);
@@ -62,7 +62,7 @@ mod tests {
         let temp_dir = tempdir().unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         
-        let jkms_path = temp_path.join("jkms");
+        let jkms_path = temp_path.join("fink");
         fs::create_dir_all(&jkms_path).unwrap();
         
         let mut app = TUIApp::new(temp_path).unwrap();

@@ -1,4 +1,4 @@
-use jkms::presentation::tui::components::{CreateDialog, DialogField, CreateTemplate};
+use fink::presentation::tui::components::{CreateDialog, DialogField, CreateTemplate};
 
 #[test]
 fn test_h_l_keys_in_filename_field() {
