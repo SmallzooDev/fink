@@ -1,5 +1,5 @@
 use crate::utils::error::Result;
-use crate::application::models::{PromptMetadata, PromptFilter, SearchType};
+use crate::application::models::{PromptMetadata, PromptFilter, SearchType, PromptType};
 
 /// Application layer for business operations
 pub trait PromptApplication {
@@ -9,6 +9,8 @@ pub trait PromptApplication {
     fn search_prompts(&self, query: &str, search_type: SearchType) -> Result<Vec<PromptMetadata>>;
     fn create_prompt(&self, name: &str, template: Option<&str>) -> Result<()>;
     fn create_prompt_with_content(&self, name: &str, template: Option<&str>, content: Option<String>) -> Result<()>;
+    fn create_prompt_with_type(&self, name: &str, template: Option<&str>, prompt_type: PromptType) -> Result<()>;
+    fn create_prompt_with_content_and_type(&self, name: &str, template: Option<&str>, content: Option<String>, prompt_type: PromptType) -> Result<()>;
     fn edit_prompt(&self, name: &str) -> Result<()>;
     fn delete_prompt(&self, name: &str, force: bool) -> Result<()>;
     fn copy_prompt(&self, name: &str) -> Result<()>;

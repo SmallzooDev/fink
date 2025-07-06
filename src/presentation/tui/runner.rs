@@ -226,16 +226,22 @@ impl EventHandler {
                         KeyCode::Left => {
                             if create_dialog.current_field() == DialogField::Template {
                                 create_dialog.previous_template();
+                            } else if create_dialog.current_field() == DialogField::Type {
+                                create_dialog.previous_type();
                             }
                         }
                         KeyCode::Right => {
                             if create_dialog.current_field() == DialogField::Template {
                                 create_dialog.next_template();
+                            } else if create_dialog.current_field() == DialogField::Type {
+                                create_dialog.next_type();
                             }
                         }
                         KeyCode::Char('h') => {
                             if create_dialog.current_field() == DialogField::Template {
                                 create_dialog.previous_template();
+                            } else if create_dialog.current_field() == DialogField::Type {
+                                create_dialog.previous_type();
                             } else {
                                 create_dialog.add_char('h');
                             }
@@ -243,6 +249,8 @@ impl EventHandler {
                         KeyCode::Char('l') => {
                             if create_dialog.current_field() == DialogField::Template {
                                 create_dialog.next_template();
+                            } else if create_dialog.current_field() == DialogField::Type {
+                                create_dialog.next_type();
                             } else {
                                 create_dialog.add_char('l');
                             }

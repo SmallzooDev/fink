@@ -543,18 +543,19 @@ impl TUIApp {
         if let Some(dialog) = &self.create_dialog {
             if dialog.is_valid() {
                 let filename = dialog.get_normalized_filename();
+                let prompt_type = dialog.get_prompt_type();
                 
                 match dialog.get_template() {
                     crate::presentation::tui::components::CreateTemplate::FromClipboard => {
                         // Get clipboard content and create prompt with it
                         let clipboard_content = self.application.get_clipboard_content().ok();
-                        self.application.create_prompt_with_content(&filename, Some("clipboard"), clipboard_content)?;
+                        self.application.create_prompt_with_content_and_type(&filename, Some("clipboard"), clipboard_content, prompt_type)?;
                     },
                     crate::presentation::tui::components::CreateTemplate::Basic => {
-                        self.application.create_prompt(&filename, Some("basic"))?;
+                        self.application.create_prompt_with_type(&filename, Some("basic"), prompt_type)?;
                     },
                     crate::presentation::tui::components::CreateTemplate::Default => {
-                        self.application.create_prompt(&filename, None)?;
+                        self.application.create_prompt_with_type(&filename, None, prompt_type)?;
                     },
                 };
                 

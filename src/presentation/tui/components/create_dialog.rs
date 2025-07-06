@@ -5,10 +5,12 @@ use ratatui::{
     text::{Line, Span},
     widgets::{Block, Borders, Clear, Paragraph, Widget},
 };
+use crate::application::models::PromptType;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum DialogField {
     Filename,
+    Type,
     Template,
 }
 
@@ -40,6 +42,7 @@ impl CreateTemplate {
 pub struct CreateDialog {
     filename: String,
     template: CreateTemplate,
+    prompt_type: PromptType,
     current_field: DialogField,
 }
 
@@ -48,6 +51,7 @@ impl CreateDialog {
         Self {
             filename: String::new(),
             template: CreateTemplate::FromClipboard,
+            prompt_type: PromptType::default(),
             current_field: DialogField::Filename,
         }
     }
@@ -62,6 +66,10 @@ impl CreateDialog {
     
     pub fn get_template(&self) -> CreateTemplate {
         self.template
+    }
+    
+    pub fn get_prompt_type(&self) -> PromptType {
+        self.prompt_type
     }
     
     pub fn current_field(&self) -> DialogField {
@@ -82,13 +90,18 @@ impl CreateDialog {
     
     pub fn next_field(&mut self) {
         self.current_field = match self.current_field {
-            DialogField::Filename => DialogField::Template,
+            DialogField::Filename => DialogField::Type,
+            DialogField::Type => DialogField::Template,
             DialogField::Template => DialogField::Filename,
         };
     }
     
     pub fn previous_field(&mut self) {
-        self.next_field(); // Since we only have 2 fields, next and previous are the same
+        self.current_field = match self.current_field {
+            DialogField::Filename => DialogField::Template,
+            DialogField::Type => DialogField::Filename,
+            DialogField::Template => DialogField::Type,
+        };
     }
     
     pub fn next_template(&mut self) {
@@ -107,6 +120,32 @@ impl CreateDialog {
                 CreateTemplate::FromClipboard => CreateTemplate::Basic,
                 CreateTemplate::Basic => CreateTemplate::Default,
                 CreateTemplate::Default => CreateTemplate::FromClipboard,
+            };
+        }
+    }
+    
+    pub fn next_type(&mut self) {
+        if self.current_field == DialogField::Type {
+            self.prompt_type = match self.prompt_type {
+                PromptType::Whole => PromptType::Instruction,
+                PromptType::Instruction => PromptType::Context,
+                PromptType::Context => PromptType::InputIndicator,
+                PromptType::InputIndicator => PromptType::OutputIndicator,
+                PromptType::OutputIndicator => PromptType::Etc,
+                PromptType::Etc => PromptType::Whole,
+            };
+        }
+    }
+    
+    pub fn previous_type(&mut self) {
+        if self.current_field == DialogField::Type {
+            self.prompt_type = match self.prompt_type {
+                PromptType::Whole => PromptType::Etc,
+                PromptType::Instruction => PromptType::Whole,
+                PromptType::Context => PromptType::Instruction,
+                PromptType::InputIndicator => PromptType::Context,
+                PromptType::OutputIndicator => PromptType::InputIndicator,
+                PromptType::Etc => PromptType::OutputIndicator,
             };
         }
     }
@@ -136,6 +175,8 @@ impl Widget for &CreateDialog {
             .margin(1)
             .constraints([
                 Constraint::Length(3), // Filename field
+                Constraint::Length(1), // Spacing
+                Constraint::Length(5), // Type selection
                 Constraint::Length(1), // Spacing
                 Constraint::Length(5), // Template selection
                 Constraint::Length(1), // Spacing
@@ -200,6 +241,62 @@ impl Widget for &CreateDialog {
         
         Paragraph::new(template_text)
             .block(template_block)
+            .render(chunks[4], buf);
+        
+        // Type selection
+        let type_style = if self.current_field == DialogField::Type {
+            Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
+        } else {
+            Style::default().fg(Color::Gray)
+        };
+        
+        let type_block = Block::default()
+            .title("Type")
+            .borders(Borders::ALL)
+            .border_style(type_style);
+        
+        let type_name = match self.prompt_type {
+            PromptType::Whole => "Whole",
+            PromptType::Instruction => "Instruction",
+            PromptType::Context => "Context",
+            PromptType::InputIndicator => "Input Indicator",
+            PromptType::OutputIndicator => "Output Indicator",
+            PromptType::Etc => "Etc",
+        };
+        
+        let type_description = match self.prompt_type {
+            PromptType::Whole => "Complete prompt (default)",
+            PromptType::Instruction => "Task or instruction for the model",
+            PromptType::Context => "External information or context",
+            PromptType::InputIndicator => "Input or question marker",
+            PromptType::OutputIndicator => "Output format indicator",
+            PromptType::Etc => "Other component type",
+        };
+        
+        let type_text = vec![
+            Line::from(vec![
+                Span::raw("  "),
+                if self.current_field == DialogField::Type {
+                    Span::styled("◄ ", Style::default().fg(Color::Cyan))
+                } else {
+                    Span::raw("  ")
+                },
+                Span::styled(type_name, Style::default().add_modifier(Modifier::BOLD)),
+                if self.current_field == DialogField::Type {
+                    Span::styled(" ►", Style::default().fg(Color::Cyan))
+                } else {
+                    Span::raw("  ")
+                },
+            ]),
+            Line::from(""),
+            Line::from(vec![
+                Span::raw("  "),
+                Span::styled(type_description, Style::default().fg(Color::DarkGray)),
+            ]),
+        ];
+        
+        Paragraph::new(type_text)
+            .block(type_block)
             .render(chunks[2], buf);
         
         // Help text
@@ -229,11 +326,23 @@ impl Widget for &CreateDialog {
                     ])
                 ]
             }
+            DialogField::Type => {
+                vec![
+                    Line::from(vec![
+                        Span::styled("h/l or ←/→", Style::default().fg(Color::Cyan)),
+                        Span::raw(" to change type • "),
+                        Span::styled("Tab", Style::default().fg(Color::Cyan)),
+                        Span::raw(" to switch fields • "),
+                        Span::styled("Enter", Style::default().fg(Color::Green)),
+                        Span::raw(" to create"),
+                    ])
+                ]
+            }
         };
         
         Paragraph::new(help_text)
             .alignment(Alignment::Center)
             .style(Style::default().fg(Color::DarkGray))
-            .render(chunks[4], buf);
+            .render(chunks[6], buf);
     }
 }

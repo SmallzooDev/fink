@@ -4,7 +4,7 @@ use crate::utils::templates::TemplateGenerator;
 use crate::utils::config::Config;
 use std::path::{Path, PathBuf};
 use std::cell::RefCell;
-use crate::application::models::{PromptMetadata, PromptFilter, SearchType};
+use crate::application::models::{PromptMetadata, PromptFilter, SearchType, PromptType};
 use crate::application::repository::{PromptRepository, FileSystemRepository};
 use crate::application::traits::PromptApplication;
 use crate::storage::FileSystem;
@@ -115,6 +115,54 @@ impl PromptApplication for DefaultPromptApplication {
         Ok(())
     }
 
+    fn create_prompt_with_content(&self, name: &str, template: Option<&str>, content: Option<String>) -> Result<()> {
+        let normalized_name = name.to_lowercase().replace(' ', "-");
+        
+        // Check if prompt already exists
+        if self.repository.prompt_exists(&normalized_name) {
+            return Err(JkmsError::Prompt(PromptError::AlreadyExists(name.to_string())));
+        }
+        
+        let prompt_content = TemplateGenerator::generate_with_content(name, template, content.as_deref())?;
+        
+        // Create the prompt using repository
+        self.repository.create_prompt(&normalized_name, &prompt_content)
+            .map_err(|e| JkmsError::from(e))?;
+        Ok(())
+    }
+
+    fn create_prompt_with_type(&self, name: &str, template: Option<&str>, prompt_type: PromptType) -> Result<()> {
+        let normalized_name = name.to_lowercase().replace(' ', "-");
+        
+        // Check if prompt already exists
+        if self.repository.prompt_exists(&normalized_name) {
+            return Err(JkmsError::Prompt(PromptError::AlreadyExists(name.to_string())));
+        }
+        
+        let content = TemplateGenerator::generate_with_type(name, template, prompt_type)?;
+        
+        // Create the prompt using repository
+        self.repository.create_prompt(&normalized_name, &content)
+            .map_err(|e| JkmsError::from(e))?;
+        Ok(())
+    }
+
+    fn create_prompt_with_content_and_type(&self, name: &str, template: Option<&str>, content: Option<String>, prompt_type: PromptType) -> Result<()> {
+        let normalized_name = name.to_lowercase().replace(' ', "-");
+        
+        // Check if prompt already exists
+        if self.repository.prompt_exists(&normalized_name) {
+            return Err(JkmsError::Prompt(PromptError::AlreadyExists(name.to_string())));
+        }
+        
+        let prompt_content = TemplateGenerator::generate_with_content_and_type(name, template, content.as_deref(), prompt_type)?;
+        
+        // Create the prompt using repository
+        self.repository.create_prompt(&normalized_name, &prompt_content)
+            .map_err(|e| JkmsError::from(e))?;
+        Ok(())
+    }
+
     fn edit_prompt(&self, name: &str) -> Result<()> {
         let metadata = self.find_prompt_metadata(name)?;
         let file_path = self.get_prompt_file_path(&metadata);
@@ -161,22 +209,6 @@ impl PromptApplication for DefaultPromptApplication {
         
         self.write_prompt_file(&file_path, &updated_content)?;
         
-        Ok(())
-    }
-    
-    fn create_prompt_with_content(&self, name: &str, template: Option<&str>, content: Option<String>) -> Result<()> {
-        let normalized_name = name.to_lowercase().replace(' ', "-");
-        
-        // Check if prompt already exists
-        if self.repository.prompt_exists(&normalized_name) {
-            return Err(JkmsError::Prompt(PromptError::AlreadyExists(name.to_string())));
-        }
-        
-        let prompt_content = TemplateGenerator::generate_with_content(name, template, content.as_deref())?;
-        
-        // Create the prompt using repository
-        self.repository.create_prompt(&normalized_name, &prompt_content)
-            .map_err(|e| JkmsError::from(e))?;
         Ok(())
     }
     

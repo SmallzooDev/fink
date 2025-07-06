@@ -103,7 +103,7 @@ impl<'a> QuickSelectScreen<'a> {
         if let Some(create_dialog) = self.app.get_create_dialog() {
             // Calculate centered area for dialog
             let dialog_width = 60;
-            let dialog_height = 15;
+            let dialog_height = 20;
             let x = (area.width.saturating_sub(dialog_width)) / 2;
             let y = (area.height.saturating_sub(dialog_height)) / 2;
             

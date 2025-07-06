@@ -42,6 +42,9 @@ fn test_create_dialog_navigate_fields() {
     assert_eq!(dialog.current_field(), DialogField::Filename);
     
     dialog.next_field();
+    assert_eq!(dialog.current_field(), DialogField::Type);
+    
+    dialog.next_field();
     assert_eq!(dialog.current_field(), DialogField::Template);
     
     dialog.next_field();
@@ -49,6 +52,9 @@ fn test_create_dialog_navigate_fields() {
     
     dialog.previous_field();
     assert_eq!(dialog.current_field(), DialogField::Template);
+    
+    dialog.previous_field();
+    assert_eq!(dialog.current_field(), DialogField::Type);
 }
 
 #[test]
@@ -56,7 +62,8 @@ fn test_create_dialog_template_selection() {
     let mut dialog = CreateDialog::new();
     
     // Navigate to template field
-    dialog.next_field();
+    dialog.next_field(); // Move to Type
+    dialog.next_field(); // Move to Template
     assert_eq!(dialog.current_field(), DialogField::Template);
     
     // Select different templates

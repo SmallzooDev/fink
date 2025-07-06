@@ -1,4 +1,5 @@
 use crate::utils::error::{Result, JkmsError, StorageError};
+use crate::application::models::PromptType;
 
 const FRONTMATTER_DELIMITER: &str = "---\n";
 
@@ -11,6 +12,15 @@ impl FrontmatterUpdater {
             Self::update_existing_frontmatter(content, tags)
         } else {
             Ok(Self::add_new_frontmatter(content, name, tags))
+        }
+    }
+    
+    /// Ensures the content has a type field, adding it if missing or invalid
+    pub fn ensure_type(content: &str, name: &str, current_type: Option<PromptType>) -> Result<String> {
+        if content.starts_with(FRONTMATTER_DELIMITER) {
+            Self::ensure_type_in_existing_frontmatter(content, current_type)
+        } else {
+            Ok(Self::add_new_frontmatter_with_type(content, name, &[], PromptType::default()))
         }
     }
     
@@ -62,6 +72,68 @@ impl FrontmatterUpdater {
             FRONTMATTER_DELIMITER,
             content
         )
+    }
+    
+    fn add_new_frontmatter_with_type(content: &str, name: &str, tags: &[String], prompt_type: PromptType) -> String {
+        format!(
+            "{}name: \"{}\"\n{}\ntype: \"{}\"\n{}{}",
+            FRONTMATTER_DELIMITER,
+            name,
+            TagFormatter::format_tags_line(tags),
+            Self::prompt_type_to_string(prompt_type),
+            FRONTMATTER_DELIMITER,
+            content
+        )
+    }
+    
+    fn ensure_type_in_existing_frontmatter(content: &str, current_type: Option<PromptType>) -> Result<String> {
+        let parts: Vec<&str> = content.splitn(3, FRONTMATTER_DELIMITER).collect();
+        
+        if parts.len() < 3 {
+            return Err(JkmsError::Storage(StorageError::ParseError(
+                "Invalid frontmatter format".to_string()
+            )));
+        }
+        
+        let mut lines: Vec<String> = Vec::new();
+        let mut type_found = false;
+        
+        for line in parts[1].lines() {
+            if line.trim().starts_with("type:") {
+                type_found = true;
+                // Only update if current_type is None (invalid) or line has invalid value
+                if current_type.is_none() {
+                    lines.push(format!("type: \"{}\"", Self::prompt_type_to_string(PromptType::default())));
+                } else {
+                    lines.push(line.to_string());
+                }
+            } else {
+                lines.push(line.to_string());
+            }
+        }
+        
+        // Add type field if it wasn't found
+        if !type_found {
+            lines.push(format!("type: \"{}\"", Self::prompt_type_to_string(PromptType::default())));
+        }
+        
+        Ok(format!("{}{}\n{}{}", 
+            FRONTMATTER_DELIMITER, 
+            lines.join("\n"), 
+            FRONTMATTER_DELIMITER, 
+            parts[2]
+        ))
+    }
+    
+    fn prompt_type_to_string(prompt_type: PromptType) -> &'static str {
+        match prompt_type {
+            PromptType::Instruction => "instruction",
+            PromptType::Context => "context",
+            PromptType::InputIndicator => "input_indicator",
+            PromptType::OutputIndicator => "output_indicator",
+            PromptType::Etc => "etc",
+            PromptType::Whole => "whole",
+        }
     }
 }
 

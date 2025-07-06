@@ -1,41 +1,64 @@
 use crate::utils::error::{Result, JkmsError, PromptError};
+use crate::application::models::PromptType;
 
 pub struct TemplateGenerator;
 
 impl TemplateGenerator {
     /// Generates prompt content based on the template
     pub fn generate(name: &str, template: Option<&str>) -> Result<String> {
+        Self::generate_with_type(name, template, PromptType::default())
+    }
+    
+    /// Generates prompt content based on the template with specific type
+    pub fn generate_with_type(name: &str, template: Option<&str>, prompt_type: PromptType) -> Result<String> {
         match template {
-            Some("basic") => Ok(Self::generate_basic_template(name)),
-            Some("clipboard") => Ok(Self::generate_clipboard_template(name)),
+            Some("basic") => Ok(Self::generate_basic_template_with_type(name, prompt_type)),
+            Some("clipboard") => Ok(Self::generate_clipboard_template_with_type(name, prompt_type)),
             Some(template_name) => {
                 Err(JkmsError::Prompt(PromptError::InvalidFormat(
                     format!("Unknown template: {}", template_name)
                 )))
             }
-            None => Ok(Self::generate_default_template(name)),
+            None => Ok(Self::generate_default_template_with_type(name, prompt_type)),
         }
     }
     
     /// Generates prompt content with additional clipboard content
     pub fn generate_with_content(name: &str, template: Option<&str>, content: Option<&str>) -> Result<String> {
+        Self::generate_with_content_and_type(name, template, content, PromptType::default())
+    }
+    
+    /// Generates prompt content with additional clipboard content and specific type
+    pub fn generate_with_content_and_type(name: &str, template: Option<&str>, content: Option<&str>, prompt_type: PromptType) -> Result<String> {
         match template {
             Some("clipboard") => {
                 if let Some(clipboard_content) = content {
-                    Ok(Self::generate_clipboard_template_with_content(name, clipboard_content))
+                    Ok(Self::generate_clipboard_template_with_content_and_type(name, clipboard_content, prompt_type))
                 } else {
-                    Ok(Self::generate_clipboard_template(name))
+                    Ok(Self::generate_clipboard_template_with_type(name, prompt_type))
                 }
             }
-            _ => Self::generate(name, template)
+            _ => Self::generate_with_type(name, template, prompt_type)
         }
     }
     
-    fn generate_basic_template(name: &str) -> String {
+    fn prompt_type_to_string(prompt_type: PromptType) -> &'static str {
+        match prompt_type {
+            PromptType::Instruction => "instruction",
+            PromptType::Context => "context",
+            PromptType::InputIndicator => "input_indicator",
+            PromptType::OutputIndicator => "output_indicator",
+            PromptType::Etc => "etc",
+            PromptType::Whole => "whole",
+        }
+    }
+    
+    fn generate_basic_template_with_type(name: &str, prompt_type: PromptType) -> String {
         format!(
             r#"---
 name: "{}"
 tags: []
+type: "{}"
 ---
 # {}
 
@@ -55,49 +78,52 @@ Please input your prompt's input data in here!
 (the type or format of the output)
 Please input your prompt's output indicator here!
 "#,
-            name, name
+            name, Self::prompt_type_to_string(prompt_type), name
         )
     }
     
-    fn generate_default_template(name: &str) -> String {
+    fn generate_default_template_with_type(name: &str, prompt_type: PromptType) -> String {
         format!(
             r#"---
 name: "{}"
 tags: []
+type: "{}"
 ---
 # {}
 
 "#,
-            name, name
+            name, Self::prompt_type_to_string(prompt_type), name
         )
     }
     
-    fn generate_clipboard_template(name: &str) -> String {
+    fn generate_clipboard_template_with_type(name: &str, prompt_type: PromptType) -> String {
         format!(
             r#"---
 name: "{}"
 tags: ["from-clipboard"]
+type: "{}"
 ---
 # {}
 
 <!-- Content from clipboard will be inserted below -->
 
 "#,
-            name, name
+            name, Self::prompt_type_to_string(prompt_type), name
         )
     }
     
-    fn generate_clipboard_template_with_content(name: &str, content: &str) -> String {
+    fn generate_clipboard_template_with_content_and_type(name: &str, content: &str, prompt_type: PromptType) -> String {
         format!(
             r#"---
 name: "{}"
 tags: ["from-clipboard"]
+type: "{}"
 ---
 # {}
 
 {}
 "#,
-            name, name, content
+            name, Self::prompt_type_to_string(prompt_type), name, content
         )
     }
 }
@@ -111,16 +137,25 @@ mod tests {
         let result = TemplateGenerator::generate("test-prompt", None).unwrap();
         assert!(result.contains(r#"name: "test-prompt""#));
         assert!(result.contains("tags: []"));
+        assert!(result.contains(r#"type: "whole""#));
         assert!(result.contains("# test-prompt"));
     }
     
     #[test]
     fn test_generate_basic_template() {
         let result = TemplateGenerator::generate("test-prompt", Some("basic")).unwrap();
+        assert!(result.contains(r#"type: "whole""#));
         assert!(result.contains("# Instruction"));
         assert!(result.contains("# Context"));
         assert!(result.contains("# Input Data"));
         assert!(result.contains("# Output Indicator"));
+    }
+    
+    #[test]
+    fn test_generate_with_custom_type() {
+        let result = TemplateGenerator::generate_with_type("test-prompt", None, PromptType::Instruction).unwrap();
+        assert!(result.contains(r#"type: "instruction""#));
+        assert!(!result.contains(r#"type: "whole""#));
     }
     
     #[test]

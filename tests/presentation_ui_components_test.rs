@@ -1,4 +1,4 @@
-use jkms::application::models::PromptMetadata;
+use jkms::application::models::{PromptMetadata, PromptType};
 use jkms::presentation::tui::components::PromptList;
 
 #[test]
@@ -9,11 +9,13 @@ fn should_create_prompt_list_component() {
             name: "Code Review".to_string(),
             file_path: "code-review.md".to_string(),
             tags: vec![],
+            prompt_type: PromptType::default(),
         },
         PromptMetadata {
             name: "Bug Analysis".to_string(),
             file_path: "bug-analysis.md".to_string(),
             tags: vec![],
+            prompt_type: PromptType::default(),
         },
     ];
 
@@ -33,16 +35,19 @@ fn should_navigate_prompt_list() {
             name: "Code Review".to_string(),
             file_path: "code-review.md".to_string(),
             tags: vec![],
+            prompt_type: PromptType::default(),
         },
         PromptMetadata {
             name: "Bug Analysis".to_string(),
             file_path: "bug-analysis.md".to_string(),
             tags: vec![],
+            prompt_type: PromptType::default(),
         },
         PromptMetadata {
             name: "Documentation".to_string(),
             file_path: "documentation.md".to_string(),
             tags: vec![],
+            prompt_type: PromptType::default(),
         },
     ];
     let mut prompt_list = PromptList::new(prompts);
@@ -69,11 +74,13 @@ fn should_handle_previous_navigation() {
             name: "Code Review".to_string(),
             file_path: "code-review.md".to_string(),
             tags: vec![],
+            prompt_type: PromptType::default(),
         },
         PromptMetadata {
             name: "Bug Analysis".to_string(),
             file_path: "bug-analysis.md".to_string(),
             tags: vec![],
+            prompt_type: PromptType::default(),
         },
     ];
     let mut prompt_list = PromptList::new(prompts);
@@ -93,11 +100,13 @@ fn should_get_selected_prompt() {
             name: "Code Review".to_string(),
             file_path: "code-review.md".to_string(),
             tags: vec![],
+            prompt_type: PromptType::default(),
         },
         PromptMetadata {
             name: "Bug Analysis".to_string(),
             file_path: "bug-analysis.md".to_string(),
             tags: vec![],
+            prompt_type: PromptType::default(),
         },
     ];
     let mut prompt_list = PromptList::new(prompts);
