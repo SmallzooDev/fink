@@ -436,6 +436,13 @@ impl EventHandler {
                 KeyCode::Char('m') => {
                     app.toggle_mode();
                 }
+                KeyCode::Char('s') => {
+                    if matches!(app.mode(), AppMode::QuickSelect | AppMode::Management) {
+                        if let Err(e) = app.toggle_star_on_selected() {
+                            app.set_error(e.to_string());
+                        }
+                    }
+                }
                 KeyCode::Char('e') => {
                     if matches!(app.mode(), AppMode::Management) {
                         // For now, just mark that edit was requested

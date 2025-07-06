@@ -25,7 +25,7 @@ impl<'a> QuickSelectScreen<'a> {
                     Constraint::Length(3),  // Header
                     Constraint::Length(3),  // Search bar
                     Constraint::Min(0),     // Main content
-                    Constraint::Length(3),  // Footer
+                    Constraint::Length(6),  // Footer (now 6 lines for vertical layout)
                 ])
                 .split(area)
         } else {
@@ -34,7 +34,7 @@ impl<'a> QuickSelectScreen<'a> {
                 .constraints([
                     Constraint::Length(3),  // Header
                     Constraint::Min(0),     // Main content
-                    Constraint::Length(3),  // Footer
+                    Constraint::Length(6),  // Footer (now 6 lines for vertical layout)
                 ])
                 .split(area)
         };
@@ -47,7 +47,9 @@ impl<'a> QuickSelectScreen<'a> {
         };
         let header = Paragraph::new(mode_text)
             .style(Style::default().fg(Color::Cyan))
-            .block(Block::default().borders(Borders::ALL));
+            .block(Block::default()
+                .borders(Borders::ALL)
+                .border_type(ratatui::widgets::BorderType::Rounded));
         f.render_widget(header, chunks[0]);
 
         // Search bar (if active)
@@ -64,7 +66,8 @@ impl<'a> QuickSelectScreen<'a> {
             // The panel will be rendered separately in the main render loop
             let placeholder = Paragraph::new("Build mode active - Interactive panel rendering...")
                 .block(Block::default()
-                    .borders(Borders::ALL));
+                    .borders(Borders::ALL)
+                    .border_type(ratatui::widgets::BorderType::Rounded));
             f.render_widget(placeholder, chunks[main_content_index]);
         } else {
             // Normal mode - split for list and preview
@@ -82,19 +85,47 @@ impl<'a> QuickSelectScreen<'a> {
 
         // Footer
         let footer_index = if self.app.is_search_active() { 3 } else { 2 };
-        let footer_text = if self.app.is_search_active() {
+        
+        // Split footer into two parts: mode selector and commands (vertically)
+        let footer_chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Length(3),  // Mode selector
+                Constraint::Length(3),  // Commands
+            ])
+            .split(chunks[footer_index]);
+        
+        // Mode selector box
+        let mode_text = match self.app.mode() {
+            AppMode::QuickSelect => "[Quick] m:Manage b:Build",
+            AppMode::Management => "[Manage] m:Quick b:Build",
+            AppMode::Build => "[Build] m:Quick",
+        };
+        let mode_selector = Paragraph::new(mode_text)
+            .style(Style::default().fg(Color::Cyan))
+            .block(Block::default()
+                .borders(Borders::ALL)
+                .border_type(ratatui::widgets::BorderType::Rounded)
+                .title(" Mode "));
+        f.render_widget(mode_selector, footer_chunks[0]);
+        
+        // Commands box
+        let commands_text = if self.app.is_search_active() {
             "Type to search  Enter: Select  Esc: Cancel search"
         } else {
             match self.app.mode() {
-                AppMode::QuickSelect => "↑↓: Navigate  Enter: Copy  /: Search  f: Filter  m: Manage  b: Build  Esc: Exit",
-                AppMode::Management => "↑↓: Navigate  e: Edit  d: Delete  n: New  t: Tags  f: Filter  /: Search  m: Quick  b: Build  Esc: Exit",
+                AppMode::QuickSelect => "↑↓: Navigate  Enter: Copy  s: Star  /: Search  f: Filter  Esc: Exit",
+                AppMode::Management => "↑↓: Navigate  e: Edit  d: Delete  n: New  s: Star  t: Tags  f: Filter  /: Search  Esc: Exit",
                 AppMode::Build => "↑↓: Navigate  Space: Select  Enter: Combine  Esc: Back",
             }
         };
-        let footer = Paragraph::new(footer_text)
+        let commands = Paragraph::new(commands_text)
             .style(Style::default().fg(Color::Gray))
-            .block(Block::default().borders(Borders::ALL));
-        f.render_widget(footer, chunks[footer_index]);
+            .block(Block::default()
+                .borders(Borders::ALL)
+                .border_type(ratatui::widgets::BorderType::Rounded)
+                .title(" Commands "));
+        f.render_widget(commands, footer_chunks[1]);
 
         // Render confirmation dialog if showing
         if let Some(dialog) = self.app.get_confirmation_dialog() {
@@ -162,6 +193,7 @@ impl<'a> QuickSelectScreen<'a> {
                     .title(" Error ")
                     .title_alignment(ratatui::layout::Alignment::Center)
                     .borders(Borders::ALL)
+                    .border_type(ratatui::widgets::BorderType::Rounded)
                     .border_style(Style::default().fg(Color::Red)))
                 .alignment(ratatui::layout::Alignment::Center);
                 
@@ -201,6 +233,7 @@ impl<'a> QuickSelectScreen<'a> {
                     .title(" Success ")
                     .title_alignment(ratatui::layout::Alignment::Center)
                     .borders(Borders::ALL)
+                    .border_type(ratatui::widgets::BorderType::Rounded)
                     .border_style(Style::default().fg(Color::Green)))
                 .alignment(ratatui::layout::Alignment::Center);
                 
@@ -226,9 +259,16 @@ impl<'a> QuickSelectScreen<'a> {
         let items: Vec<ListItem> = prompts
             .iter()
             .map(|p| {
+                // Check if prompt is starred
+                let is_starred = p.tags.contains(&"starred".to_string());
+                let star_prefix = if is_starred { "⭐ " } else { "   " };
+                
                 if let Some(query) = search_query {
                     let highlighted = highlighter.highlight(&p.name, query);
-                    let spans: Vec<Span> = highlighted.segments
+                    let mut spans: Vec<Span> = vec![
+                        Span::styled(star_prefix, Style::default().fg(Color::Yellow))
+                    ];
+                    spans.extend(highlighted.segments
                         .into_iter()
                         .map(|seg| {
                             if seg.is_match {
@@ -236,11 +276,13 @@ impl<'a> QuickSelectScreen<'a> {
                             } else {
                                 Span::raw(seg.text)
                             }
-                        })
-                        .collect();
+                        }));
                     ListItem::new(Line::from(spans))
                 } else {
-                    ListItem::new(Line::from(vec![Span::raw(&p.name)]))
+                    ListItem::new(Line::from(vec![
+                        Span::styled(star_prefix, Style::default().fg(Color::Yellow)),
+                        Span::raw(&p.name)
+                    ]))
                 }
             })
             .collect();
@@ -254,7 +296,10 @@ impl<'a> QuickSelectScreen<'a> {
         };
 
         let list = List::new(items)
-            .block(Block::default().borders(Borders::ALL).title(title))
+            .block(Block::default()
+                .borders(Borders::ALL)
+                .border_type(ratatui::widgets::BorderType::Rounded)
+                .title(title))
             .highlight_style(
                 Style::default()
                     .bg(Color::DarkGray)
@@ -284,6 +329,7 @@ impl<'a> QuickSelectScreen<'a> {
         let preview = Paragraph::new(content)
             .block(Block::default()
                 .borders(Borders::ALL)
+                .border_type(ratatui::widgets::BorderType::Rounded)
                 .title("Preview")
                 .title_alignment(ratatui::layout::Alignment::Center))
             .wrap(ratatui::widgets::Wrap { trim: true })
@@ -300,6 +346,7 @@ impl<'a> QuickSelectScreen<'a> {
             .style(Style::default().fg(Color::Yellow))
             .block(Block::default()
                 .borders(Borders::ALL)
+                .border_type(ratatui::widgets::BorderType::Rounded)
                 .title("Search (Esc to cancel)")
                 .border_style(Style::default().fg(Color::Yellow)));
         

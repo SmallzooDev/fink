@@ -68,6 +68,7 @@ impl ConfirmationDialog {
         let dialog = Paragraph::new(text)
             .block(Block::default()
                 .borders(Borders::ALL)
+                .border_type(ratatui::widgets::BorderType::Rounded)
                 .border_style(Style::default().fg(Color::Yellow))
                 .title("Confirmation")
                 .title_alignment(Alignment::Center))

@@ -494,6 +494,32 @@ impl TUIApp {
         }
     }
     
+    pub fn toggle_star_on_selected(&mut self) -> Result<()> {
+        if let Some(prompt) = self.prompt_list.get_selected() {
+            let mut tags = prompt.tags.clone();
+            let star_tag = "starred".to_string();
+            
+            if tags.contains(&star_tag) {
+                // Remove star
+                tags.retain(|t| t != &star_tag);
+                self.application.update_prompt_tags(&prompt.name, tags)?;
+                self.set_success("Removed star from prompt".to_string());
+            } else {
+                // Add star
+                tags.push(star_tag);
+                self.application.update_prompt_tags(&prompt.name, tags)?;
+                self.set_success("Added star to prompt".to_string());
+            }
+            
+            // Reload prompts to reflect changes
+            self.reload_prompts()?;
+            
+            Ok(())
+        } else {
+            Err(anyhow::anyhow!("No prompt selected"))
+        }
+    }
+    
     pub fn open_tag_management(&mut self) {
         let tags = self.get_selected_prompt_tags();
         self.tag_dialog = Some(TagManagementDialog::new(tags));

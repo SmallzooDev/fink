@@ -281,7 +281,7 @@ impl InteractiveBuildPanel {
         let header = Paragraph::new(header_text)
             .block(Block::default()
                 .borders(Borders::ALL)
-                .title(" Build Mode - Interactive Selection "));
+                .border_type(ratatui::widgets::BorderType::Rounded));
         
         frame.render_widget(header, area);
     }
@@ -313,6 +313,7 @@ impl InteractiveBuildPanel {
         let list = List::new(items)
             .block(Block::default()
                 .borders(Borders::ALL)
+                .border_type(ratatui::widgets::BorderType::Rounded)
                 .title(" Available Options "))
             .highlight_style(Style::default().bg(Color::DarkGray).fg(Color::White));
         
@@ -341,6 +342,7 @@ impl InteractiveBuildPanel {
         let preview = Paragraph::new(content)
             .block(Block::default()
                 .borders(Borders::ALL)
+                .border_type(ratatui::widgets::BorderType::Rounded)
                 .title(" Preview "))
             .wrap(Wrap { trim: true });
         
@@ -353,6 +355,7 @@ impl InteractiveBuildPanel {
         let input = Paragraph::new(input_text)
             .block(Block::default()
                 .borders(Borders::ALL)
+                .border_type(ratatui::widgets::BorderType::Rounded)
                 .title(" Optional Comment (press Enter to skip or finish) "))
             .style(Style::default().fg(Color::Yellow));
         
@@ -389,7 +392,8 @@ impl InteractiveBuildPanel {
         
         let complete = Paragraph::new(complete_text)
             .block(Block::default()
-                .borders(Borders::ALL))
+                .borders(Borders::ALL)
+                .border_type(ratatui::widgets::BorderType::Rounded))
             .alignment(Alignment::Center);
         
         frame.render_widget(complete, area);
@@ -404,7 +408,8 @@ impl InteractiveBuildPanel {
         
         let status = Paragraph::new(keys)
             .block(Block::default()
-                .borders(Borders::ALL))
+                .borders(Borders::ALL)
+                .border_type(ratatui::widgets::BorderType::Rounded))
             .style(Style::default().fg(Color::DarkGray));
         
         frame.render_widget(status, area);

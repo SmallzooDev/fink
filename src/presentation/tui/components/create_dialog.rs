@@ -164,6 +164,7 @@ impl Widget for &CreateDialog {
         let block = Block::default()
             .title(" Create New Prompt ")
             .borders(Borders::ALL)
+            .border_type(ratatui::widgets::BorderType::Rounded)
             .border_style(Style::default().fg(Color::White));
         
         let inner = block.inner(area);
@@ -194,6 +195,7 @@ impl Widget for &CreateDialog {
         let filename_block = Block::default()
             .title("Filename")
             .borders(Borders::ALL)
+            .border_type(ratatui::widgets::BorderType::Rounded)
             .border_style(filename_style);
         
         let filename_text = if self.filename.is_empty() && self.current_field == DialogField::Filename {
@@ -222,6 +224,7 @@ impl Widget for &CreateDialog {
         let template_block = Block::default()
             .title("Template")
             .borders(Borders::ALL)
+            .border_type(ratatui::widgets::BorderType::Rounded)
             .border_style(template_style);
         
         let template_text = vec![
@@ -253,6 +256,7 @@ impl Widget for &CreateDialog {
         let type_block = Block::default()
             .title("Type")
             .borders(Borders::ALL)
+            .border_type(ratatui::widgets::BorderType::Rounded)
             .border_style(type_style);
         
         let type_name = match self.prompt_type {

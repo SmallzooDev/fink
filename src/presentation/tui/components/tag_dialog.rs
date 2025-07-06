@@ -43,6 +43,7 @@ impl TagManagementDialog {
         // Create the main dialog block - consistent with confirmation dialog style
         let block = Block::default()
             .borders(Borders::ALL)
+            .border_type(ratatui::widgets::BorderType::Rounded)
             .title("Tag Management")
             .title_alignment(Alignment::Center)
             .border_style(Style::default().fg(Color::Yellow));
@@ -118,7 +119,10 @@ impl TagManagementDialog {
                 .collect();
             
             let list = List::new(items)
-                .block(Block::default().borders(Borders::ALL).title("Tags"))
+                .block(Block::default()
+                    .borders(Borders::ALL)
+                    .border_type(ratatui::widgets::BorderType::Rounded)
+                    .title("Tags"))
                 .highlight_style(
                     Style::default()
                         .bg(Color::DarkGray)
@@ -139,6 +143,7 @@ impl TagManagementDialog {
         if self.input_mode == TagInputMode::AddingTag {
             let input_block = Block::default()
                 .borders(Borders::ALL)
+                .border_type(ratatui::widgets::BorderType::Rounded)
                 .border_style(Style::default().fg(Color::Yellow));
             
             let input_text = format!("{}_", self.input_buffer);

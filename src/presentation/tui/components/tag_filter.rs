@@ -33,6 +33,7 @@ impl TagFilterDialog {
         // Create the main dialog block
         let block = Block::default()
             .borders(Borders::ALL)
+            .border_type(ratatui::widgets::BorderType::Rounded)
             .title("Filter by Tag")
             .title_alignment(Alignment::Center)
             .border_style(Style::default().fg(Color::Yellow));
