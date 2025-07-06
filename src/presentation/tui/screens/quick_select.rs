@@ -41,9 +41,9 @@ impl<'a> QuickSelectScreen<'a> {
 
         // Header
         let mode_text = match self.app.mode() {
-            AppMode::QuickSelect => "jkms Manager - Quick Select",
-            AppMode::Management => "jkms Manager - Management Mode",
-            AppMode::Build => "jkms Manager - Build Mode",
+            AppMode::QuickSelect => "Quick Select",
+            AppMode::Management => "Management Mode",
+            AppMode::Build => "Build Mode",
         };
         let header = Paragraph::new(mode_text)
             .style(Style::default().fg(Color::Cyan))
