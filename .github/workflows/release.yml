@@ -1,0 +1,104 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+  build-and-upload:
+    name: Build and Upload
+    needs: create-release
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            name: fink-linux-amd64
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            name: fink-macos-amd64
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            name: fink-macos-arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+          override: true
+      
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }}
+      
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp target/${{ matrix.target }}/release/fink dist/
+          cp README.md LICENSE dist/
+          cd dist
+          tar czf ../${{ matrix.name }}.tar.gz *
+      
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./${{ matrix.name }}.tar.gz
+          asset_name: ${{ matrix.name }}.tar.gz
+          asset_content_type: application/gzip
+
+  update-homebrew:
+    name: Update Homebrew Formula
+    needs: build-and-upload
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Download macOS release
+        run: |
+          wget https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/fink-macos-amd64.tar.gz
+          SHA256=$(sha256sum fink-macos-amd64.tar.gz | cut -d' ' -f1)
+          echo "SHA256=$SHA256" >> $GITHUB_ENV
+      
+      - name: Update Formula
+        run: |
+          sed -i "s/PLACEHOLDER_SHA256/${{ env.SHA256 }}/" homebrew/fink.rb
+          sed -i "s|v0.1.0|${{ github.ref_name }}|g" homebrew/fink.rb
+      
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: Update Homebrew formula for ${{ github.ref_name }}
+          title: Update Homebrew formula for ${{ github.ref_name }}
+          body: |
+            Updates the Homebrew formula for the ${{ github.ref_name }} release.
+            
+            SHA256: ${{ env.SHA256 }}
+          branch: homebrew-${{ github.ref_name }}

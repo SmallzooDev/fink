@@ -25,7 +25,7 @@ fink is a command-line tool designed to help you efficiently manage, organize, a
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/fink.git
+git clone https://github.com/SmallzooDev/fink.git
 cd fink
 
 # Build and install

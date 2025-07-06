@@ -1,7 +1,7 @@
 # fink
 
 > Beautiful TUI for managing AI prompts.
-> More information: <https://github.com/yourusername/fink>.
+> More information: <https://github.com/SmallzooDev/fink>.
 
 - Launch quick selection mode to copy a prompt:
 
