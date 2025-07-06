@@ -1,0 +1,121 @@
+.TH FINK 1 "January 2025" "fink 0.1.0" "User Commands"
+.SH NAME
+fink \- Beautiful TUI for managing AI prompts
+.SH SYNOPSIS
+.B fink
+[\fB\-m\fR|\fB\-\-manage\fR]
+[\fB\-p\fR|\fB\-\-path\fR \fIPATH\fR]
+[\fICOMMAND\fR]
+.SH DESCRIPTION
+.B fink
+is a command-line tool designed to help you efficiently manage, organize, and access your AI prompts. It provides both a quick selection mode for rapid prompt copying and a comprehensive management interface for organizing your prompt library.
+.SH OPTIONS
+.TP
+.BR \-m ", " \-\-manage
+Enter management mode with full TUI interface
+.TP
+.BR \-p ", " \-\-path " " \fIPATH\fR
+Path to the prompts directory (overrides config file)
+.TP
+.BR \-h ", " \-\-help
+Display help information
+.TP
+.BR \-V ", " \-\-version
+Display version information
+.SH COMMANDS
+.TP
+.B list
+List all prompts
+.TP
+.B get \fINAME\fR
+Get a specific prompt by name
+.TP
+.B create \fINAME\fR [\fB\-\-template\fR \fITEMPLATE\fR]
+Create a new prompt with optional template
+.TP
+.B edit \fINAME\fR
+Edit an existing prompt
+.TP
+.B delete \fINAME\fR [\fB\-\-force\fR]
+Delete a prompt (use \-\-force to skip confirmation)
+.TP
+.B copy \fINAME\fR
+Copy a prompt to clipboard
+.TP
+.B search \fIQUERY\fR
+Search for prompts by name, content, or tags
+.SH QUICK SELECTION MODE
+When run without arguments, fink enters quick selection mode:
+.PP
+.RS 4
+\(bu Navigate with arrow keys or j/k
+.br
+\(bu Press Enter to copy selected prompt and exit
+.br
+\(bu Press / to start search
+.br
+\(bu Press t to open tag filter
+.br
+\(bu Press Tab to switch to management mode
+.br
+\(bu Press Esc or q to exit
+.RE
+.SH MANAGEMENT MODE
+Access the full management interface with \fB\-\-manage\fR:
+.PP
+.RS 4
+\(bu n: Create new prompt
+.br
+\(bu e: Edit selected prompt
+.br
+\(bu d: Delete selected prompt
+.br
+\(bu b: Enter build mode
+.br
+\(bu Space: Toggle tag filter
+.br
+\(bu Ctrl+C: Copy to clipboard
+.RE
+.SH FILES
+.TP
+.I ~/.config/fink/config.toml
+Configuration file
+.TP
+.I ~/.fink/prompts/
+Default prompt storage directory
+.TP
+.I ~/.fink/prompts/.initialized
+Initialization flag for default prompts
+.SH EXAMPLES
+.TP
+Launch quick selection mode:
+.B fink
+.TP
+Enter management mode:
+.B fink --manage
+.TP
+List all prompts:
+.B fink list
+.TP
+Create a new prompt:
+.B fink create my-prompt --template role-based
+.TP
+Search for prompts:
+.B fink search "code review"
+.SH ENVIRONMENT
+.TP
+.B EDITOR
+The editor to use for editing prompts (can be overridden in config)
+.SH EXIT STATUS
+.TP
+.B 0
+Success
+.TP
+.B 1
+General error
+.SH AUTHORS
+Written by the fink contributors.
+.SH COPYRIGHT
+Copyright (c) 2024 fink contributors. License MIT.
+.SH SEE ALSO
+Full documentation at: <https://github.com/yourusername/fink>

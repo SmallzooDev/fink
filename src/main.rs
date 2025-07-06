@@ -2,6 +2,7 @@ use clap::Parser;
 use fink::presentation::cli::{Commands, execute_command};
 use fink::presentation::tui::runner::{run, run_manage_mode};
 use fink::utils::config::Config;
+use fink::utils::default_prompts::initialize_default_prompts;
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -35,6 +36,11 @@ fn main() {
     }
 
     let base_path = config.storage_path().to_path_buf();
+
+    // Initialize default prompts if this is the first run
+    if let Err(e) = initialize_default_prompts(&base_path) {
+        eprintln!("Warning: Failed to initialize default prompts: {}", e);
+    }
 
     let result = match cli.command {
         Some(cmd) => execute_command(cmd, &config),
