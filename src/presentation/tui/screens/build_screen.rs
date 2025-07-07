@@ -62,7 +62,7 @@ mod tests {
         let temp_dir = tempdir().unwrap();
         let temp_path = temp_dir.path().to_path_buf();
         
-        let jkms_path = temp_path.join("fink");
+        let jkms_path = temp_path.join("prompts");
         fs::create_dir_all(&jkms_path).unwrap();
         
         let mut app = TUIApp::new(temp_path).unwrap();

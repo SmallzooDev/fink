@@ -3,7 +3,6 @@ mod tests {
     use fink::application::models::PromptType;
     use fink::utils::frontmatter::FrontmatterUpdater;
     use std::fs;
-    use std::path::PathBuf;
     use tempfile::TempDir;
 
     #[test]
@@ -58,7 +57,7 @@ type: "instruction"
         use fink::storage::FileSystem;
 
         let temp_dir = TempDir::new().unwrap();
-        let jkms_dir = temp_dir.path().join("fink");
+        let jkms_dir = temp_dir.path().join("prompts");
         fs::create_dir_all(&jkms_dir).unwrap();
         
         let prompt_path = jkms_dir.join("test-prompt.md");

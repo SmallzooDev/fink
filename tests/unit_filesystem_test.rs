@@ -5,7 +5,7 @@ use tempfile::tempdir;
 fn should_list_prompts_from_directory() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     fs::create_dir(&prompts_dir).unwrap();
 
     // Create test prompt files

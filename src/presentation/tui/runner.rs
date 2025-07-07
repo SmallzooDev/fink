@@ -46,6 +46,12 @@ impl Default for EventHandler {
 impl EventHandler {
     pub fn handle_event(&self, app: &mut TUIApp, event: Event) -> Result<()> {
         if let Event::Key(key) = event {
+            // Global Ctrl+C handler - exits from anywhere
+            if key.code == KeyCode::Char('c') && key.modifiers.contains(event::KeyModifiers::CONTROL) {
+                app.quit();
+                return Ok(());
+            }
+            
             // Clear any error or success message on key press
             if app.has_error() {
                 app.clear_error();
@@ -54,6 +60,24 @@ impl EventHandler {
             
             if app.has_success() {
                 app.clear_success();
+                return Ok(());
+            }
+            
+            // Handle initialization dialog first if showing
+            if app.is_showing_init_dialog() {
+                match key.code {
+                    KeyCode::Char('y') | KeyCode::Char('Y') => {
+                        if let Err(e) = app.accept_init_dialog() {
+                            app.set_error(format!("Failed to initialize prompts: {}", e));
+                        }
+                    }
+                    KeyCode::Char('n') | KeyCode::Char('N') => {
+                        if let Err(e) = app.decline_init_dialog() {
+                            app.set_error(format!("Failed to save preference: {}", e));
+                        }
+                    }
+                    _ => {} // Ignore other keys while init dialog is showing
+                }
                 return Ok(());
             }
             
@@ -399,8 +423,10 @@ impl EventHandler {
                     KeyCode::Enter => {
                         // Keep search active but allow selection
                         if matches!(app.mode(), AppMode::QuickSelect) {
-                            app.copy_selected_to_clipboard()?;
-                            app.quit();
+                            match app.copy_selected_to_clipboard() {
+                                Ok(_) => app.quit(),
+                                Err(e) => app.set_error(format!("Cannot copy: {}", e)),
+                            }
                         }
                     }
                     _ => {} // Ignore other keys in search mode
@@ -429,8 +455,10 @@ impl EventHandler {
                     // In QuickSelect mode, copy and quit
                     // In Management mode, we'll handle this differently later
                     if matches!(app.mode(), AppMode::QuickSelect) {
-                        app.copy_selected_to_clipboard()?;
-                        app.quit();
+                        match app.copy_selected_to_clipboard() {
+                            Ok(_) => app.quit(),
+                            Err(e) => app.set_error(format!("Cannot copy: {}", e)),
+                        }
                     }
                 }
                 KeyCode::Char('m') => {

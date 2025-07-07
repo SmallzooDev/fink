@@ -9,7 +9,7 @@ fn test_scroll_with_tag_filter() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("fink");
+    let jkms_path = temp_path.join("prompts");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create test prompts with different tags
@@ -85,7 +85,7 @@ fn test_selection_preserved_after_tag_update() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("fink");
+    let jkms_path = temp_path.join("prompts");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create test prompts
@@ -137,7 +137,7 @@ fn test_list_state_with_filter() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("fink");
+    let jkms_path = temp_path.join("prompts");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create test prompts

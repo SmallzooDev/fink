@@ -6,7 +6,7 @@ use tempfile::tempdir;
 fn should_get_prompt_content_for_clipboard() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     let prompt_content = r#"---

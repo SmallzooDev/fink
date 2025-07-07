@@ -31,7 +31,7 @@ fn should_handle_quit_command() {
 fn should_handle_navigation() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     std::fs::write(prompts_dir.join("test1.md"), "# Test 1").unwrap();
@@ -50,7 +50,7 @@ fn should_handle_navigation() {
 fn should_get_selected_content() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     let content = r#"---
@@ -78,7 +78,7 @@ This is test content."#;
 fn should_copy_selected_prompt_to_clipboard() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     let content = r#"---

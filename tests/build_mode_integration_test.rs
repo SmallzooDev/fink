@@ -13,7 +13,7 @@ mod tests {
         let temp_path = temp_dir.path().to_path_buf();
         
         // Create jkms directory
-        let jkms_path = temp_path.join("fink");
+        let jkms_path = temp_path.join("prompts");
         fs::create_dir_all(&jkms_path).unwrap();
         
         // Create some test prompts with different types
@@ -67,11 +67,21 @@ type: "context"
         let temp_path = temp_dir.path().to_path_buf();
         
         // Create jkms directory
-        let jkms_path = temp_path.join("fink");
+        let jkms_path = temp_path.join("prompts");
         fs::create_dir_all(&jkms_path).unwrap();
+        
+        // Create a test prompt
+        let prompt = r#"---
+name: "test-prompt"
+tags: ["test"]
+type: "instruction"
+---
+# Test Prompt"#;
+        fs::write(jkms_path.join("test.md"), prompt).unwrap();
         
         // Create TUIApp and enter build mode
         let mut app = TUIApp::new(temp_path.clone()).unwrap();
+        app.reload_prompts().unwrap();
         app.enter_build_mode();
         
         let event_handler = EventHandler::new();
@@ -103,7 +113,7 @@ type: "context"
         let temp_path = temp_dir.path().to_path_buf();
         
         // Create jkms directory
-        let jkms_path = temp_path.join("fink");
+        let jkms_path = temp_path.join("prompts");
         fs::create_dir_all(&jkms_path).unwrap();
         
         // Create multiple prompts

@@ -9,7 +9,7 @@ fn setup_test_app() -> (TempDir, DefaultPromptApplication) {
     let base_path = temp_dir.path().to_path_buf();
     
     // Create the jkms directory
-    let jkms_dir = base_path.join("fink");
+    let jkms_dir = base_path.join("prompts");
     fs::create_dir_all(&jkms_dir).unwrap();
     
     let app = DefaultPromptApplication::new(base_path).unwrap();
@@ -17,7 +17,7 @@ fn setup_test_app() -> (TempDir, DefaultPromptApplication) {
 }
 
 fn create_test_prompt(base_path: &PathBuf, name: &str, content: &str) {
-    let file_path = base_path.join("fink").join(format!("{}.md", name));
+    let file_path = base_path.join("prompts").join(format!("{}.md", name));
     fs::write(file_path, content).unwrap();
 }
 
@@ -42,7 +42,7 @@ Content here"#;
     app.update_prompt_tags("test-prompt", new_tags.clone()).unwrap();
     
     // Read the file and verify
-    let file_path = base_path.join("fink").join("test-prompt.md");
+    let file_path = base_path.join("prompts").join("test-prompt.md");
     let updated_content = fs::read_to_string(file_path).unwrap();
     
     assert!(updated_content.contains(r#"tags: ["new-tag1", "new-tag2"]"#));
@@ -70,7 +70,7 @@ Content here"#;
     app.update_prompt_tags("test-prompt", new_tags.clone()).unwrap();
     
     // Read the file and verify
-    let file_path = base_path.join("fink").join("test-prompt.md");
+    let file_path = base_path.join("prompts").join("test-prompt.md");
     let updated_content = fs::read_to_string(file_path).unwrap();
     
     assert!(updated_content.contains(r#"tags: ["tag1", "tag2"]"#));
@@ -93,7 +93,7 @@ Just some content without frontmatter"#;
     app.update_prompt_tags("test-prompt", new_tags.clone()).unwrap();
     
     // Read the file and verify
-    let file_path = base_path.join("fink").join("test-prompt.md");
+    let file_path = base_path.join("prompts").join("test-prompt.md");
     let updated_content = fs::read_to_string(file_path).unwrap();
     
     assert!(updated_content.starts_with("---\n"));
@@ -121,7 +121,7 @@ tags: ["tag1", "tag2"]
     app.update_prompt_tags("test-prompt", new_tags).unwrap();
     
     // Read the file and verify
-    let file_path = base_path.join("fink").join("test-prompt.md");
+    let file_path = base_path.join("prompts").join("test-prompt.md");
     let updated_content = fs::read_to_string(file_path).unwrap();
     
     assert!(updated_content.contains("tags: []"));
@@ -150,7 +150,7 @@ custom_field: "custom value"
     app.update_prompt_tags("test-prompt", new_tags).unwrap();
     
     // Read the file and verify all fields are preserved
-    let file_path = base_path.join("fink").join("test-prompt.md");
+    let file_path = base_path.join("prompts").join("test-prompt.md");
     let updated_content = fs::read_to_string(file_path).unwrap();
     
     assert!(updated_content.contains("description: \"Important description\""));
@@ -192,7 +192,7 @@ name: "test-prompt"
     app.update_prompt_tags("test-prompt", new_tags).unwrap();
     
     // Read and verify
-    let file_path = base_path.join("fink").join("test-prompt.md");
+    let file_path = base_path.join("prompts").join("test-prompt.md");
     let updated_content = fs::read_to_string(file_path).unwrap();
     
     assert!(updated_content.contains(r#"tags: ["tag-with-dash", "tag_with_underscore", "tag with spaces"]"#));

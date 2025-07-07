@@ -11,7 +11,7 @@ fn test_create_from_clipboard_template() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("fink");
+    let jkms_path = temp_path.join("prompts");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create application

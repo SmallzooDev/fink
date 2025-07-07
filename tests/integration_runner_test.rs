@@ -5,7 +5,7 @@ use tempfile::tempdir;
 fn should_create_app_runner() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     std::fs::write(prompts_dir.join("test.md"), "# Test").unwrap();

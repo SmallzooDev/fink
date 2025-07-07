@@ -10,7 +10,7 @@ fn test_create_dialog_integration() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("fink");
+    let jkms_path = temp_path.join("prompts");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create TUIApp
@@ -31,7 +31,7 @@ fn test_create_prompt_with_dialog() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("fink");
+    let jkms_path = temp_path.join("prompts");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create TUIApp
@@ -77,7 +77,7 @@ fn test_create_prompt_with_template() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("fink");
+    let jkms_path = temp_path.join("prompts");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create TUIApp
@@ -151,7 +151,7 @@ fn test_create_prompt_with_specific_type() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("fink");
+    let jkms_path = temp_path.join("prompts");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create TUIApp
@@ -201,7 +201,7 @@ fn test_cancel_create_dialog() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("fink");
+    let jkms_path = temp_path.join("prompts");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create TUIApp

@@ -2,6 +2,7 @@ use crate::utils::error::{Result, FinkError, PromptError, ExternalError};
 use crate::utils::frontmatter::FrontmatterUpdater;
 use crate::utils::templates::TemplateGenerator;
 use crate::utils::config::Config;
+use crate::utils::constants::PROMPTS_DIR;
 use std::path::PathBuf;
 use std::cell::RefCell;
 use crate::application::models::{PromptMetadata, PromptFilter, SearchType, PromptType};
@@ -52,7 +53,7 @@ impl DefaultPromptApplication {
     fn get_prompt_file_path(&self, metadata: &PromptMetadata) -> PathBuf {
         self.repository
             .get_base_path()
-            .join("fink")
+            .join(PROMPTS_DIR)
             .join(&metadata.file_path)
     }
 }

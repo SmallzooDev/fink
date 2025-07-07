@@ -6,7 +6,7 @@ use tempfile::tempdir;
 fn should_list_prompts_with_list_command() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     let prompt1 = r#"---
@@ -56,7 +56,7 @@ fn should_handle_empty_directory_with_list_command() {
 fn should_get_prompt_content_by_name() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     let prompt = r#"---
@@ -103,7 +103,7 @@ fn should_handle_nonexistent_prompt() {
 fn should_create_new_prompt_with_create_command() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     // Act & Assert
@@ -128,7 +128,7 @@ fn should_create_new_prompt_with_create_command() {
 fn should_create_prompt_with_template() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     // Act & Assert
@@ -159,7 +159,7 @@ fn should_create_prompt_with_template() {
 fn should_fail_when_creating_duplicate_prompt() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     // Create an existing prompt
@@ -185,7 +185,7 @@ tags: []
 fn should_fail_when_template_not_found() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     // Act & Assert
@@ -205,7 +205,7 @@ fn should_fail_when_template_not_found() {
 fn should_edit_prompt_with_external_editor() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     let original_content = r#"---
@@ -268,7 +268,7 @@ fn should_fail_when_editing_nonexistent_prompt() {
 fn should_delete_prompt_with_force_flag() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     let prompt_content = r#"---
@@ -298,7 +298,7 @@ tags: ["test"]
 fn should_require_force_flag_for_deletion() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     let prompt_content = r#"---
@@ -345,7 +345,7 @@ fn should_fail_when_deleting_nonexistent_prompt() {
 fn should_copy_prompt_to_clipboard() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     let prompt_content = r#"---
@@ -388,7 +388,7 @@ fn should_fail_when_copying_nonexistent_prompt() {
 fn should_search_prompts_by_name() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     let prompt1 = r#"---
@@ -431,7 +431,7 @@ tags: ["docs", "writing"]
 fn should_search_prompts_by_tag() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     let prompt1 = r#"---
@@ -465,7 +465,7 @@ tags: ["bug", "code"]
 fn should_show_message_when_no_search_results() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     let prompt = r#"---

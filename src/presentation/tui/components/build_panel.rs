@@ -159,7 +159,7 @@ mod tests {
     #[test]
     fn test_build_panel_creation() {
         let temp_dir = tempdir().unwrap();
-        let test_file = temp_dir.path().join("fink").join("test1.md");
+        let test_file = temp_dir.path().join("prompts").join("test1.md");
         
         let prompts = vec![
             PromptMetadata {
@@ -178,7 +178,7 @@ mod tests {
     #[test]
     fn test_toggle_selection() {
         let temp_dir = tempdir().unwrap();
-        let test_file = temp_dir.path().join("fink").join("test1.md");
+        let test_file = temp_dir.path().join("prompts").join("test1.md");
         
         let prompts = vec![
             PromptMetadata {

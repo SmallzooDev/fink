@@ -9,7 +9,7 @@ fn test_tag_filtering_activation() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("fink");
+    let jkms_path = temp_path.join("prompts");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create test prompt files with tags
@@ -56,7 +56,7 @@ fn test_tag_filtering_by_single_tag() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("fink");
+    let jkms_path = temp_path.join("prompts");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create test prompt files with tags
@@ -127,7 +127,7 @@ fn test_tag_list_extraction() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("fink");
+    let jkms_path = temp_path.join("prompts");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create test prompt files with tags
@@ -175,7 +175,7 @@ fn test_tag_filter_combined_with_search() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("fink");
+    let jkms_path = temp_path.join("prompts");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create test prompt files with tags

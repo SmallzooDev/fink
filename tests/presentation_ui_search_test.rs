@@ -47,7 +47,7 @@ fn test_search_filtering_by_name() {
     let temp_path = temp_dir.path().to_path_buf();
     
     // Create jkms directory
-    let jkms_path = temp_path.join("fink");
+    let jkms_path = temp_path.join("prompts");
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create test prompt files

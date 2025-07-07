@@ -2,6 +2,7 @@ use crate::application::application::DefaultPromptApplication;
 use crate::application::traits::PromptApplication;
 use crate::presentation::tui::components::{PromptList, confirmation_dialog::{ConfirmationDialog as Dialog, ConfirmationAction}, TagManagementDialog, TagFilterDialog, CreateDialog, BuildPanel, InteractiveBuildPanel};
 use crate::utils::config::Config;
+use crate::utils::constants::PROMPTS_DIR;
 use anyhow::Result;
 use ratatui::widgets::ListState;
 use std::path::PathBuf;
@@ -39,6 +40,7 @@ pub struct TUIApp {
     interactive_build_panel: Option<InteractiveBuildPanel>,
     error_message: Option<String>,
     success_message: Option<String>,
+    init_dialog_active: bool,
 }
 
 impl TUIApp {
@@ -51,9 +53,14 @@ impl TUIApp {
     }
 
     pub fn new_with_mode(base_path: PathBuf, mode: AppMode) -> Result<Self> {
-        let application = DefaultPromptApplication::new(base_path)?;
+        let application = DefaultPromptApplication::new(base_path.clone())?;
         let prompts_metadata = application.list_prompts(None)?;
-        let prompt_list = PromptList::new(prompts_metadata);
+        let prompt_list = PromptList::new(prompts_metadata.clone());
+        
+        // Check if this is first launch (no .initialized flag and no prompts)
+        let prompts_dir = base_path.join(PROMPTS_DIR);
+        let init_flag = prompts_dir.join(".initialized");
+        let is_first_launch = !init_flag.exists() && prompts_metadata.is_empty();
 
         Ok(Self {
             mode,
@@ -76,13 +83,19 @@ impl TUIApp {
             interactive_build_panel: None,
             error_message: None,
             success_message: None,
+            init_dialog_active: is_first_launch,
         })
     }
     
     pub fn new_with_mode_and_config(config: &Config, mode: AppMode) -> Result<Self> {
         let application = DefaultPromptApplication::with_config(config)?;
         let prompts_metadata = application.list_prompts(None)?;
-        let prompt_list = PromptList::new(prompts_metadata);
+        let prompt_list = PromptList::new(prompts_metadata.clone());
+        
+        // Check if this is first launch (no .initialized flag and no prompts)
+        let prompts_dir = config.storage_path().join(PROMPTS_DIR);
+        let init_flag = prompts_dir.join(".initialized");
+        let is_first_launch = !init_flag.exists() && prompts_metadata.is_empty();
 
         Ok(Self {
             mode,
@@ -105,6 +118,7 @@ impl TUIApp {
             interactive_build_panel: None,
             error_message: None,
             success_message: None,
+            init_dialog_active: is_first_launch,
         })
     }
 
@@ -672,6 +686,36 @@ impl TUIApp {
     
     pub fn is_build_mode(&self) -> bool {
         matches!(self.mode, AppMode::Build)
+    }
+    
+    pub fn is_showing_init_dialog(&self) -> bool {
+        self.init_dialog_active
+    }
+    
+    pub fn accept_init_dialog(&mut self) -> Result<()> {
+        use crate::utils::default_prompts::initialize_default_prompts;
+        
+        // Initialize default prompts
+        let prompts_dir = self.get_base_path().join(PROMPTS_DIR);
+        initialize_default_prompts(&prompts_dir)?;
+        
+        // Reload prompts to show them
+        self.reload_prompts()?;
+        
+        // Close dialog
+        self.init_dialog_active = false;
+        Ok(())
+    }
+    
+    pub fn decline_init_dialog(&mut self) -> Result<()> {
+        // Create .initialized flag so we don't ask again
+        let prompts_dir = self.get_base_path().join(PROMPTS_DIR);
+        std::fs::create_dir_all(&prompts_dir)?;
+        std::fs::write(prompts_dir.join(".initialized"), "")?;
+        
+        // Close dialog
+        self.init_dialog_active = false;
+        Ok(())
     }
     
     // Interactive build panel methods

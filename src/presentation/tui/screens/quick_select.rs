@@ -127,6 +127,12 @@ impl<'a> QuickSelectScreen<'a> {
                 .title(" Commands "));
         f.render_widget(commands, footer_chunks[1]);
 
+        // Render initialization dialog if showing
+        if self.app.is_showing_init_dialog() {
+            let init_dialog = crate::presentation::tui::components::InitDialog;
+            init_dialog.render(f, area);
+        }
+        
         // Render confirmation dialog if showing
         if let Some(dialog) = self.app.get_confirmation_dialog() {
             dialog.render(f, area);

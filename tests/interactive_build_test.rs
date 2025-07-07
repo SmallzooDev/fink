@@ -13,7 +13,7 @@ mod tests {
         let temp_path = temp_dir.path().to_path_buf();
         
         // Create jkms directory
-        let jkms_path = temp_path.join("fink");
+        let jkms_path = temp_path.join("prompts");
         fs::create_dir_all(&jkms_path).unwrap();
         
         // Create prompts of different types
@@ -73,7 +73,7 @@ Context information here."#;
         let temp_path = temp_dir.path().to_path_buf();
         
         // Create jkms directory
-        let jkms_path = temp_path.join("fink");
+        let jkms_path = temp_path.join("prompts");
         fs::create_dir_all(&jkms_path).unwrap();
         
         // Create a simple prompt
@@ -124,7 +124,7 @@ Test content"#;
         let temp_path = temp_dir.path().to_path_buf();
         
         // Create jkms directory
-        let jkms_path = temp_path.join("fink");
+        let jkms_path = temp_path.join("prompts");
         fs::create_dir_all(&jkms_path).unwrap();
         
         // Create prompts

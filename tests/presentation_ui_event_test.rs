@@ -23,7 +23,7 @@ fn should_handle_quit_event() {
 fn should_handle_navigation_down() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     std::fs::write(prompts_dir.join("test1.md"), "# Test 1").unwrap();
@@ -45,7 +45,7 @@ fn should_handle_navigation_down() {
 fn should_handle_enter_to_copy() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
 
     let content = r#"---
@@ -110,7 +110,7 @@ fn should_toggle_back_to_quick_select_mode() {
 fn should_handle_edit_in_management_mode() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     let content = r#"---
@@ -137,7 +137,7 @@ name: "Test Prompt"
 fn should_handle_delete_in_management_mode() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     let content = r#"---
@@ -205,7 +205,7 @@ fn should_not_handle_management_keys_in_quick_select_mode() {
 fn should_show_confirmation_dialog_on_delete() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     let content = r#"---
@@ -235,7 +235,7 @@ name: "Test Prompt"
 fn should_cancel_delete_on_escape_in_confirmation() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     let content = r#"---
@@ -269,7 +269,7 @@ name: "Test Prompt"
 fn should_confirm_delete_on_y_key() {
     // Arrange
     let temp_dir = tempdir().unwrap();
-    let prompts_dir = temp_dir.path().join("fink");
+    let prompts_dir = temp_dir.path().join("prompts");
     std::fs::create_dir(&prompts_dir).unwrap();
     
     let content = r#"---

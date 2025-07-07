@@ -6,6 +6,7 @@ pub mod tag_filter;
 pub mod create_dialog;
 pub mod build_panel;
 pub mod interactive_build_panel;
+pub mod init_dialog;
 
 pub use prompt_list::PromptList;
 pub use tag_dialog::{TagManagementDialog, TagInputMode};
@@ -13,3 +14,4 @@ pub use tag_filter::TagFilterDialog;
 pub use create_dialog::{CreateDialog, DialogField, CreateTemplate};
 pub use build_panel::BuildPanel;
 pub use interactive_build_panel::{InteractiveBuildPanel, BuildStep};
+pub use init_dialog::InitDialog;

@@ -1,6 +1,7 @@
 use anyhow::Result;
 use std::path::{Path, PathBuf};
 use crate::application::models::PromptMetadata;
+use crate::utils::constants::PROMPTS_DIR;
 
 pub struct FileSystem {
     base_path: PathBuf,
@@ -42,14 +43,14 @@ impl FileSystem {
     }
 
     pub fn list_prompts(&self) -> Result<Vec<PromptMetadata>> {
-        let prompts_dir = self.base_path.join("fink");
+        let prompts_dir = self.base_path.join(PROMPTS_DIR);
         let mut prompts = Vec::new();
+        
 
         if prompts_dir.exists() {
-            for entry in std::fs::read_dir(prompts_dir)? {
+            for entry in std::fs::read_dir(&prompts_dir)? {
                 let entry = entry?;
                 let path = entry.path();
-
                 if path.extension().and_then(|s| s.to_str()) == Some("md") {
                     let content = std::fs::read_to_string(&path)?;
                     let file_name = path.file_name().and_then(|s| s.to_str()).unwrap_or("");
