@@ -1,15 +1,13 @@
 class Fink < Formula
   desc "Beautiful TUI for managing AI prompts with version control"
   homepage "https://github.com/SmallzooDev/fink"
-  url "https://github.com/SmallzooDev/fink/archive/v0.1.0.tar.gz"
-  sha256 "834af27d9211a95eaae8ec3b095367c9a49c400992ae8d9eed8f6ce16b9e5cad"
+  url "https://github.com/SmallzooDev/fink/releases/download/v0.1.1/fink-v0.1.1-macos.tar.gz"
+  sha256 "f9169747d50896e32b3d70177b573b0a637e6fdde707c57885c9ed5b69ff3a03"
+  version "0.1.1"
   license "MIT"
-  head "https://github.com/SmallzooDev/fink.git", branch: "main"
-
-  depends_on "rust" => :build
 
   def install
-    system "cargo", "install", "--locked", "--root", prefix, "--path", "."
+    bin.install "fink"
   end
 
   test do
