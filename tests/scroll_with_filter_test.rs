@@ -44,7 +44,9 @@ tags: ["test", "d"]
     let mut app = TUIApp::new(temp_path).unwrap();
     
     // Apply tag filter for "test"
-    app.set_tag_filter("test");
+    let mut test_filter = std::collections::HashSet::new();
+    test_filter.insert("test".to_string());
+    app.set_tag_filters(test_filter);
     
     // Get filtered prompts
     let filtered = app.get_filtered_prompts();
@@ -154,7 +156,9 @@ tags: ["{}"]
     let mut app = TUIApp::new(temp_path).unwrap();
     
     // Apply filter for "even" tag
-    app.set_tag_filter("even");
+    let mut even_filter = std::collections::HashSet::new();
+    even_filter.insert("even".to_string());
+    app.set_tag_filters(even_filter);
     
     // Navigate to second filtered item (prompt2)
     app.next();

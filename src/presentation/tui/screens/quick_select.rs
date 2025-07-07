@@ -45,7 +45,17 @@ impl<'a> QuickSelectScreen<'a> {
             AppMode::Management => "Management Mode",
             AppMode::Build => "Build Mode",
         };
-        let header = Paragraph::new(mode_text)
+        
+        // Add active filters to header if any
+        let active_filters = self.app.get_active_tag_filters();
+        let header_text = if active_filters.is_empty() {
+            mode_text.to_string()
+        } else {
+            let filter_tags: Vec<String> = active_filters.iter().cloned().collect();
+            format!("{} | Filtering by: {}", mode_text, filter_tags.join(", "))
+        };
+        
+        let header = Paragraph::new(header_text)
             .style(Style::default().fg(Color::Cyan))
             .block(Block::default()
                 .borders(Borders::ALL)
@@ -114,8 +124,8 @@ impl<'a> QuickSelectScreen<'a> {
             "Type to search  Enter: Select  Esc: Cancel search"
         } else {
             match self.app.mode() {
-                AppMode::QuickSelect => "↑↓: Navigate  Enter: Copy  s: Star  /: Search  f: Filter  Esc: Exit",
-                AppMode::Management => "↑↓: Navigate  e: Edit  d: Delete  n: New  s: Star  t: Tags  f: Filter  /: Search  Esc: Exit",
+                AppMode::QuickSelect => "↑↓: Navigate  Enter: Copy  s: Star  /: Search  f: Filter  F: Clear Filters  Esc: Exit",
+                AppMode::Management => "↑↓: Navigate  e: Edit  d: Delete  n: New  s: Star  t: Tags  f: Filter  F: Clear  /: Search  Esc: Exit",
                 AppMode::Build => "↑↓: Navigate  Space: Select  Enter: Combine  Esc: Back",
             }
         };
@@ -248,11 +258,7 @@ impl<'a> QuickSelectScreen<'a> {
     }
 
     fn render_prompt_list(&self, f: &mut Frame, area: Rect) {
-        let prompts = if self.app.is_search_active() || self.app.is_tag_filter_active() {
-            self.app.get_filtered_prompts()
-        } else {
-            self.app.get_prompts().clone()
-        };
+        let prompts = self.app.get_filtered_prompts();
         
         let search_query = if self.app.is_search_active() && !self.app.get_search_query().is_empty() {
             Some(self.app.get_search_query())
@@ -266,7 +272,7 @@ impl<'a> QuickSelectScreen<'a> {
             .iter()
             .map(|p| {
                 // Check if prompt is starred
-                let is_starred = p.tags.contains(&"starred".to_string());
+                let is_starred = p.tags.iter().any(|t| t == "starred");
                 let star_prefix = if is_starred { "⭐ " } else { "   " };
                 
                 if let Some(query) = search_query {
@@ -293,8 +299,9 @@ impl<'a> QuickSelectScreen<'a> {
             })
             .collect();
 
-        let title = if let Some(tag_filter) = self.app.get_active_tag_filter() {
-            format!("Prompts (tag: {}) - {} results", tag_filter, prompts.len())
+        let title = if !self.app.get_active_tag_filters().is_empty() {
+            let filters: Vec<String> = self.app.get_active_tag_filters().iter().cloned().collect();
+            format!("Prompts (tags: {}) - {} results", filters.join(", "), prompts.len())
         } else if self.app.is_search_active() && !self.app.get_search_query().is_empty() {
             format!("Prompts (filtered: {})", prompts.len())
         } else {

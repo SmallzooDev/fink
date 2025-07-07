@@ -6,6 +6,9 @@ use crate::utils::constants::PROMPTS_DIR;
 use anyhow::Result;
 use ratatui::widgets::ListState;
 use std::path::PathBuf;
+use std::collections::HashSet;
+
+const STARRED_TAG: &str = "starred";
 
 #[derive(Debug, PartialEq)]
 pub enum AppMode {
@@ -29,7 +32,7 @@ pub struct TUIApp {
     search_active: bool,
     search_query: String,
     tag_filter_active: bool,
-    active_tag_filter: Option<String>,
+    active_tag_filters: HashSet<String>,
     tag_management_active: bool,
     pub tag_dialog: Option<TagManagementDialog>,
     tag_filter_dialog_active: bool,
@@ -72,7 +75,7 @@ impl TUIApp {
             search_active: false,
             search_query: String::new(),
             tag_filter_active: false,
-            active_tag_filter: None,
+            active_tag_filters: HashSet::new(),
             tag_management_active: false,
             tag_dialog: None,
             tag_filter_dialog_active: false,
@@ -107,7 +110,7 @@ impl TUIApp {
             search_active: false,
             search_query: String::new(),
             tag_filter_active: false,
-            active_tag_filter: None,
+            active_tag_filters: HashSet::new(),
             tag_management_active: false,
             tag_dialog: None,
             tag_filter_dialog_active: false,
@@ -394,30 +397,39 @@ impl TUIApp {
     }
 
     pub fn get_filtered_prompts(&self) -> Vec<crate::application::models::PromptMetadata> {
-        let mut prompts = self.prompt_list.prompts().clone();
+        let base_prompts = self.prompt_list.prompts();
         
-        // Apply tag filter first if active
-        if let Some(tag) = &self.active_tag_filter {
-            prompts = self.application
-                .search_prompts(tag, crate::application::models::SearchType::Tags)
-                .unwrap_or_else(|_| Vec::new());
-        }
+        // Only clone if we need to filter, otherwise work with references
+        let filtered: Vec<&crate::application::models::PromptMetadata> = base_prompts
+            .iter()
+            .filter(|p| {
+                // Apply tag filter if active
+                if !self.active_tag_filters.is_empty() {
+                    if !self.active_tag_filters.iter().any(|tag| p.tags.contains(tag)) {
+                        return false;
+                    }
+                }
+                
+                // Apply search filter if active
+                if !self.search_query.is_empty() {
+                    let query_lower = self.search_query.to_lowercase();
+                    if !p.name.to_lowercase().contains(&query_lower) {
+                        return false;
+                    }
+                }
+                
+                true
+            })
+            .collect();
         
-        // Then apply search filter if active
-        if !self.search_query.is_empty() {
-            if self.active_tag_filter.is_some() {
-                // If tag filter is active, further filter by name search
-                let query_lower = self.search_query.to_lowercase();
-                prompts = prompts.into_iter()
-                    .filter(|p| p.name.to_lowercase().contains(&query_lower))
-                    .collect();
-            } else {
-                // Otherwise use application layer's search
-                prompts = self.application
-                    .search_prompts(&self.search_query, crate::application::models::SearchType::Name)
-                    .unwrap_or_else(|_| Vec::new());
-            }
-        }
+        // Now clone and sort
+        let mut prompts: Vec<_> = filtered.into_iter().cloned().collect();
+        
+        // Sort prompts: starred first, then alphabetically within each group
+        prompts.sort_by_cached_key(|p| {
+            let is_starred = !p.tags.iter().any(|t| t == STARRED_TAG);
+            (is_starred, p.name.to_lowercase())
+        });
         
         prompts
     }
@@ -427,34 +439,44 @@ impl TUIApp {
         self.tag_filter_active
     }
     
-    pub fn get_active_tag_filter(&self) -> Option<&String> {
-        self.active_tag_filter.as_ref()
+    pub fn get_active_tag_filters(&self) -> &HashSet<String> {
+        &self.active_tag_filters
     }
     
     pub fn activate_tag_filter(&mut self) {
         self.tag_filter_active = true;
     }
     
-    pub fn set_tag_filter(&mut self, tag: &str) {
-        self.active_tag_filter = Some(tag.to_string());
+    pub fn set_tag_filters(&mut self, tags: HashSet<String>) {
+        self.active_tag_filters = tags;
+        self.tag_filter_active = !self.active_tag_filters.is_empty();
+    }
+    
+    pub fn add_tag_filter(&mut self, tag: &str) {
+        self.active_tag_filters.insert(tag.to_string());
         self.tag_filter_active = true;
     }
     
-    pub fn clear_tag_filter(&mut self) {
-        self.active_tag_filter = None;
+    pub fn remove_tag_filter(&mut self, tag: &str) {
+        self.active_tag_filters.remove(tag);
+        self.tag_filter_active = !self.active_tag_filters.is_empty();
+    }
+    
+    pub fn clear_tag_filters(&mut self) {
+        self.active_tag_filters.clear();
         self.tag_filter_active = false;
     }
     
     pub fn get_all_tags(&self) -> Vec<String> {
-        let mut tags = std::collections::HashSet::new();
+        let mut tags = std::collections::HashSet::<&str>::new();
         
         for prompt in self.prompt_list.prompts() {
             for tag in &prompt.tags {
-                tags.insert(tag.clone());
+                tags.insert(tag.as_str());
             }
         }
         
-        let mut sorted_tags: Vec<String> = tags.into_iter().collect();
+        let mut sorted_tags: Vec<String> = tags.into_iter().map(|s| s.to_string()).collect();
         sorted_tags.sort();
         sorted_tags
     }
@@ -511,16 +533,15 @@ impl TUIApp {
     pub fn toggle_star_on_selected(&mut self) -> Result<()> {
         if let Some(prompt) = self.prompt_list.get_selected() {
             let mut tags = prompt.tags.clone();
-            let star_tag = "starred".to_string();
             
-            if tags.contains(&star_tag) {
+            if tags.iter().any(|t| t == STARRED_TAG) {
                 // Remove star
-                tags.retain(|t| t != &star_tag);
+                tags.retain(|t| t != STARRED_TAG);
                 self.application.update_prompt_tags(&prompt.name, tags)?;
                 self.set_success("Removed star from prompt".to_string());
             } else {
                 // Add star
-                tags.push(star_tag);
+                tags.push(STARRED_TAG.to_string());
                 self.application.update_prompt_tags(&prompt.name, tags)?;
                 self.set_success("Added star to prompt".to_string());
             }
@@ -568,7 +589,7 @@ impl TUIApp {
     // Tag filter dialog methods
     pub fn open_tag_filter(&mut self) {
         let all_tags = self.get_all_tags();
-        self.tag_filter_dialog = Some(TagFilterDialog::new(all_tags, self.active_tag_filter.clone()));
+        self.tag_filter_dialog = Some(TagFilterDialog::new(all_tags, self.active_tag_filters.clone()));
         self.tag_filter_dialog_active = true;
     }
     

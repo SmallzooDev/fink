@@ -40,7 +40,7 @@ tags: ["docs", "writing", "markdown"]
     
     // Initial state should not have tag filtering active
     assert_eq!(app.is_tag_filter_active(), false);
-    assert_eq!(app.get_active_tag_filter(), None);
+    assert!(app.get_active_tag_filters().is_empty());
     
     // Activate tag filtering mode
     app.activate_tag_filter();
@@ -94,7 +94,9 @@ tags: ["python", "programming"]
     assert_eq!(app.get_filtered_prompts().len(), 4);
     
     // Filter by "code" tag
-    app.set_tag_filter("code");
+    let mut code_filter = std::collections::HashSet::new();
+    code_filter.insert("code".to_string());
+    app.set_tag_filters(code_filter);
     
     // Should only show prompts with "code" tag
     let filtered = app.get_filtered_prompts();
@@ -105,7 +107,9 @@ tags: ["python", "programming"]
     assert!(names.contains(&"bug-analysis".to_string()));
     
     // Filter by "python" tag
-    app.set_tag_filter("python");
+    let mut python_filter = std::collections::HashSet::new();
+    python_filter.insert("python".to_string());
+    app.set_tag_filters(python_filter);
     
     // Should only show prompts with "python" tag
     let filtered = app.get_filtered_prompts();
@@ -116,7 +120,7 @@ tags: ["python", "programming"]
     assert!(names.contains(&"python-helper".to_string()));
     
     // Clear tag filter should show all prompts again
-    app.clear_tag_filter();
+    app.clear_tag_filters();
     assert_eq!(app.get_filtered_prompts().len(), 4);
 }
 
@@ -213,7 +217,9 @@ tags: ["review", "helper"]
     assert_eq!(app.get_filtered_prompts().len(), 4);
     
     // Filter by "code" tag
-    app.set_tag_filter("code");
+    let mut code_filter = std::collections::HashSet::new();
+    code_filter.insert("code".to_string());
+    app.set_tag_filters(code_filter);
     assert_eq!(app.get_filtered_prompts().len(), 2);
     
     // Now also search for "review"
@@ -230,7 +236,7 @@ tags: ["review", "helper"]
     assert_eq!(app.get_filtered_prompts().len(), 2);
     
     // Clear tag filter but set search
-    app.clear_tag_filter();
+    app.clear_tag_filters();
     app.set_search_query("review");
     let filtered = app.get_filtered_prompts();
     assert_eq!(filtered.len(), 2);

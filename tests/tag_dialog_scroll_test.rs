@@ -43,26 +43,26 @@ fn test_tag_management_dialog_scroll() {
 fn test_tag_filter_dialog_scroll() {
     // Create dialog with many tags
     let tags: Vec<String> = (0..15).map(|i| format!("filter{}", i)).collect();
-    let mut dialog = TagFilterDialog::new(tags.clone(), None);
+    let mut dialog = TagFilterDialog::new(tags.clone(), std::collections::HashSet::new());
     
     // Initial selection should be at 0
-    assert_eq!(dialog.get_selected_tag(), Some(&"filter0".to_string()));
+    assert_eq!(dialog.get_selected_tag(), Some("filter0".to_string()));
     
     // Test scrolling down
     for _ in 0..5 {
         dialog.move_down();
     }
-    assert_eq!(dialog.get_selected_tag(), Some(&"filter5".to_string()));
+    assert_eq!(dialog.get_selected_tag(), Some("filter5".to_string()));
     
     // Test scrolling to end and wrap around
     for _ in 0..10 {
         dialog.move_down();
     }
-    assert_eq!(dialog.get_selected_tag(), Some(&"filter0".to_string()));
+    assert_eq!(dialog.get_selected_tag(), Some("filter0".to_string()));
     
     // Test scrolling up and wrap around
     dialog.move_up();
-    assert_eq!(dialog.get_selected_tag(), Some(&"filter14".to_string()));
+    assert_eq!(dialog.get_selected_tag(), Some("filter14".to_string()));
 }
 
 #[test]
