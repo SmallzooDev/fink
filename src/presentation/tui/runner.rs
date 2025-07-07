@@ -414,10 +414,6 @@ impl EventHandler {
             KeyCode::Esc => {
                 app.deactivate_search();
             }
-            KeyCode::Char(c) => {
-                let current_query = app.get_search_query().to_string();
-                app.set_search_query(&format!("{}{}", current_query, c));
-            }
             KeyCode::Backspace => {
                 let current_query = app.get_search_query();
                 if !current_query.is_empty() {
@@ -432,7 +428,31 @@ impl EventHandler {
                         Ok(_) => app.quit(),
                         Err(e) => app.set_error(format!("Cannot copy: {}", e)),
                     }
+                } else if matches!(app.mode(), AppMode::Management) {
+                    // In management mode, just close search
+                    app.deactivate_search();
                 }
+            }
+            KeyCode::Down => {
+                // Allow navigation while searching
+                app.next();
+            }
+            KeyCode::Up => {
+                // Allow navigation while searching
+                app.previous();
+            }
+            KeyCode::Char('j') => {
+                // Allow j for navigation
+                app.next();
+            }
+            KeyCode::Char('k') => {
+                // Allow k for navigation
+                app.previous();
+            }
+            KeyCode::Char(c) => {
+                // Add character to search query
+                let current_query = app.get_search_query().to_string();
+                app.set_search_query(&format!("{}{}", current_query, c));
             }
             _ => {} // Ignore other keys in search mode
         }

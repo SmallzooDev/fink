@@ -103,9 +103,10 @@ fn test_create_prompt_with_template() {
         dialog.add_char('e');
         
         // Switch to template field and select basic template
-        dialog.next_field();
-        dialog.next_template(); // Default
-        dialog.next_template(); // Basic template
+        dialog.next_field(); // Go to Type
+        dialog.next_field(); // Go to Template
+        dialog.next_template(); // FromClipboard -> Default
+        dialog.next_template(); // Default -> Basic
     }
     
     // Confirm creation
