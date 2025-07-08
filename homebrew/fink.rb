@@ -1,9 +1,9 @@
 class Fink < Formula
   desc "Beautiful TUI for managing AI prompts with version control"
   homepage "https://github.com/SmallzooDev/fink"
-  url "https://github.com/SmallzooDev/fink/releases/download/v0.1.1/fink-v0.1.1-macos.tar.gz"
+  url "https://github.com/SmallzooDev/fink/releases/download/v0.1.2/fink-v0.1.2-macos.tar.gz"
   sha256 "662804a28440790aec976219424b3f3df64dffa987fe1b83d039ff4419efb280"
-  version "0.1.1"
+  version "0.1.2"
   license "MIT"
 
   def install
