@@ -171,14 +171,24 @@ impl InteractiveBuildPanel {
     }
     
     pub fn add_comment_char(&mut self, c: char) {
-        self.comment.insert(self.comment_cursor, c);
-        self.comment_cursor += 1;
+        // Convert to chars for proper Unicode handling
+        let mut chars: Vec<char> = self.comment.chars().collect();
+        if self.comment_cursor <= chars.len() {
+            chars.insert(self.comment_cursor, c);
+            self.comment = chars.into_iter().collect();
+            self.comment_cursor += 1;
+        }
     }
     
     pub fn delete_comment_char(&mut self) {
         if self.comment_cursor > 0 {
-            self.comment.remove(self.comment_cursor - 1);
-            self.comment_cursor -= 1;
+            // Convert to chars for proper Unicode handling
+            let mut chars: Vec<char> = self.comment.chars().collect();
+            if self.comment_cursor <= chars.len() {
+                chars.remove(self.comment_cursor - 1);
+                self.comment = chars.into_iter().collect();
+                self.comment_cursor -= 1;
+            }
         }
     }
     
@@ -189,7 +199,8 @@ impl InteractiveBuildPanel {
     }
     
     pub fn move_cursor_right(&mut self) {
-        if self.comment_cursor < self.comment.len() {
+        let char_count = self.comment.chars().count();
+        if self.comment_cursor < char_count {
             self.comment_cursor += 1;
         }
     }

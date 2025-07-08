@@ -66,17 +66,27 @@ impl TagFilterDialog {
     
     /// Add character to search query
     pub fn add_char(&mut self, c: char) {
-        self.search_query.insert(self.cursor_position, c);
-        self.cursor_position += 1;
-        self.selected_index = 0; // Reset selection when search changes
+        // Convert to chars for proper Unicode handling
+        let mut chars: Vec<char> = self.search_query.chars().collect();
+        if self.cursor_position <= chars.len() {
+            chars.insert(self.cursor_position, c);
+            self.search_query = chars.into_iter().collect();
+            self.cursor_position += 1;
+            self.selected_index = 0; // Reset selection when search changes
+        }
     }
     
     /// Remove character from search query
     pub fn delete_char(&mut self) {
         if self.cursor_position > 0 {
-            self.search_query.remove(self.cursor_position - 1);
-            self.cursor_position -= 1;
-            self.selected_index = 0; // Reset selection when search changes
+            // Convert to chars for proper Unicode handling
+            let mut chars: Vec<char> = self.search_query.chars().collect();
+            if self.cursor_position <= chars.len() {
+                chars.remove(self.cursor_position - 1);
+                self.search_query = chars.into_iter().collect();
+                self.cursor_position -= 1;
+                self.selected_index = 0; // Reset selection when search changes
+            }
         }
     }
     

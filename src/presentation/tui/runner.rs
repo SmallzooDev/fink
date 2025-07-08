@@ -417,7 +417,10 @@ impl EventHandler {
             KeyCode::Backspace => {
                 let current_query = app.get_search_query();
                 if !current_query.is_empty() {
-                    let new_query = current_query[..current_query.len() - 1].to_string();
+                    // Use character-based manipulation to properly handle Unicode
+                    let mut chars: Vec<char> = current_query.chars().collect();
+                    chars.pop();
+                    let new_query: String = chars.into_iter().collect();
                     app.set_search_query(&new_query);
                 }
             }
