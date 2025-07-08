@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.1.3] - 2025-01-08
+
+### Added
+- **Korean/Unicode Support**: Fixed crash when using backspace with Korean and other multi-byte Unicode characters
+- **Version Update Detection**: Shows release notes when launching after an update
+- **Type-Specific Prompts**: Added 12 specialized prompts organized by type (Instruction, Context, Input/Output, Etc)
+- **Two-Step Initialization**: First dialog for basic prompts, second dialog for type-specific prompts
+
+### Fixed
+- Unicode character handling in search, tag filter, and interactive build panel
+- Proper character-based string manipulation instead of byte-based
+
+### Changed
+- Improved first-launch experience with two-step prompt initialization
+- Enhanced build mode with type-specific prompt examples
+
 ## [0.1.1] - 2025-01-07
 
 ### Changed
