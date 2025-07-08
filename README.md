@@ -1,6 +1,6 @@
 # fink
 
-A beautiful TUI (Terminal User Interface) for managing AI prompts with version control support.
+A beautiful TUI (Terminal User Interface) for managing AI prompts.
 
 ## Overview
 
