@@ -137,10 +137,21 @@ impl<'a> QuickSelectScreen<'a> {
                 .title(" Commands "));
         f.render_widget(commands, footer_chunks[1]);
 
+        // Render update dialog if showing
+        if let Some(update_dialog) = self.app.get_update_dialog() {
+            update_dialog.render(f, area);
+        }
+        
         // Render initialization dialog if showing
         if self.app.is_showing_init_dialog() {
             let init_dialog = crate::presentation::tui::components::InitDialog;
             init_dialog.render(f, area);
+        }
+        
+        // Render type prompts dialog if showing
+        if self.app.is_showing_type_prompts_dialog() {
+            let type_prompts_dialog = crate::presentation::tui::components::TypePromptsDialog;
+            type_prompts_dialog.render(f, area);
         }
         
         // Render confirmation dialog if showing

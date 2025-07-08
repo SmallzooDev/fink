@@ -28,6 +28,12 @@ impl Config {
             .join(".config/fink/config.toml")
     }
     
+    pub fn config_dir() -> PathBuf {
+        dirs::home_dir()
+            .unwrap_or_else(|| PathBuf::from("."))
+            .join(".config/fink")
+    }
+    
     pub fn load_from_file(config_path: &Path) -> Result<Self> {
         let content = fs::read_to_string(config_path)
             .map_err(|e| FinkError::Storage(StorageError::Io(e)))?;

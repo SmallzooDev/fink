@@ -48,6 +48,16 @@ impl EventHandler {
         false
     }
     
+    fn handle_update_dialog(&self, app: &mut TUIApp, key: &KeyEvent) -> Result<()> {
+        match key.code {
+            KeyCode::Enter | KeyCode::Esc => {
+                app.close_update_dialog();
+            }
+            _ => {} // Ignore other keys while update dialog is showing
+        }
+        Ok(())
+    }
+    
     fn handle_init_dialog(&self, app: &mut TUIApp, key: &KeyEvent) -> Result<()> {
         match key.code {
             KeyCode::Char('y') | KeyCode::Char('Y') => {
@@ -61,6 +71,21 @@ impl EventHandler {
                 }
             }
             _ => {} // Ignore other keys while init dialog is showing
+        }
+        Ok(())
+    }
+    
+    fn handle_type_prompts_dialog(&self, app: &mut TUIApp, key: &KeyEvent) -> Result<()> {
+        match key.code {
+            KeyCode::Char('y') | KeyCode::Char('Y') => {
+                if let Err(e) = app.accept_type_prompts_dialog() {
+                    app.set_error(format!("Failed to initialize type-specific prompts: {}", e));
+                }
+            }
+            KeyCode::Char('n') | KeyCode::Char('N') => {
+                app.decline_type_prompts_dialog();
+            }
+            _ => {} // Ignore other keys while type prompts dialog is showing
         }
         Ok(())
     }
@@ -546,9 +571,19 @@ impl EventHandler {
                 return Ok(());
             }
             
+            // Handle update dialog if showing
+            if app.is_showing_update_dialog() {
+                return self.handle_update_dialog(app, &key);
+            }
+            
             // Handle initialization dialog if showing
             if app.is_showing_init_dialog() {
                 return self.handle_init_dialog(app, &key);
+            }
+            
+            // Handle type prompts dialog if showing
+            if app.is_showing_type_prompts_dialog() {
+                return self.handle_type_prompts_dialog(app, &key);
             }
             
             // Handle confirmation dialog if showing
