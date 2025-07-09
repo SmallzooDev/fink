@@ -379,10 +379,10 @@ impl EventHandler {
                         KeyCode::Esc => {
                             app.exit_build_mode();
                         }
-                        KeyCode::Up | KeyCode::Char('k') => {
+                        KeyCode::Up => {
                             panel.previous();
                         }
-                        KeyCode::Down | KeyCode::Char('j') => {
+                        KeyCode::Down => {
                             panel.next();
                         }
                         KeyCode::Enter => {
@@ -398,12 +398,12 @@ impl EventHandler {
                 KeyCode::Esc => {
                     app.exit_build_mode();
                 }
-                KeyCode::Up | KeyCode::Char('k') => {
+                KeyCode::Up => {
                     if let Some(build_panel) = app.get_build_panel_mut() {
                         build_panel.previous();
                     }
                 }
-                KeyCode::Down | KeyCode::Char('j') => {
+                KeyCode::Down => {
                     if let Some(build_panel) = app.get_build_panel_mut() {
                         build_panel.next();
                     }
@@ -459,14 +459,6 @@ impl EventHandler {
                 // Allow navigation while searching
                 app.previous();
             }
-            KeyCode::Char('j') => {
-                // Allow j for navigation
-                app.next();
-            }
-            KeyCode::Char('k') => {
-                // Allow k for navigation
-                app.previous();
-            }
             KeyCode::Char(c) => {
                 // Add character to search query
                 let current_query = app.get_search_query().to_string();
@@ -482,10 +474,10 @@ impl EventHandler {
             KeyCode::Esc | KeyCode::Char('q') => {
                 app.quit();
             }
-            KeyCode::Down | KeyCode::Char('j') => {
+            KeyCode::Down => {
                 app.next();
             }
-            KeyCode::Up | KeyCode::Char('k') => {
+            KeyCode::Up => {
                 app.previous();
             }
             KeyCode::Enter => {
