@@ -3,6 +3,7 @@ use crate::application::traits::PromptApplication;
 use crate::presentation::tui::components::{PromptList, confirmation_dialog::{ConfirmationDialog as Dialog, ConfirmationAction}, TagManagementDialog, TagFilterDialog, CreateDialog, BuildPanel, InteractiveBuildPanel};
 use crate::presentation::tui::screens::ConfigScreen;
 use crate::utils::config::Config;
+use crate::utils::state::AppState;
 use crate::utils::constants::PROMPTS_DIR;
 use anyhow::Result;
 use ratatui::widgets::ListState;
@@ -50,6 +51,7 @@ pub struct TUIApp {
     config_screen: Option<ConfigScreen>,
     config: Config,
     config_path: PathBuf,
+    app_state: AppState,
 }
 
 impl TUIApp {
@@ -79,7 +81,13 @@ impl TUIApp {
     pub fn new_with_mode_and_config_path(config: &Config, mode: AppMode, config_path: PathBuf) -> Result<Self> {
         let application = DefaultPromptApplication::with_config(config)?;
         let prompts_metadata = application.list_prompts(None)?;
-        let prompt_list = PromptList::new(prompts_metadata.clone());
+        let mut prompt_list = PromptList::new(prompts_metadata.clone());
+        
+        // Load app state and restore cursor position
+        let app_state = AppState::load().unwrap_or_default();
+        if let Some(last_selected) = app_state.last_selected_prompt() {
+            prompt_list.find_and_select(last_selected);
+        }
         
         // Check if this is first launch (no .initialized flag and no prompts)
         let prompts_dir = config.storage_path().join(PROMPTS_DIR);
@@ -112,6 +120,7 @@ impl TUIApp {
             config_screen: None,
             config: config.clone(),
             config_path,
+            app_state,
         })
     }
 
@@ -120,7 +129,24 @@ impl TUIApp {
     }
 
     pub fn quit(&mut self) {
+        // Save current state before quitting
+        self.save_state();
         self.should_quit = true;
+    }
+    
+    pub fn save_state(&mut self) {
+        // Update state with current selection
+        if let Some(selected) = self.prompt_list.get_selected() {
+            self.app_state.set_last_selected_prompt(Some(selected.name.clone()));
+        } else {
+            self.app_state.set_last_selected_prompt(None);
+        }
+        
+        // Save state to file
+        if let Err(e) = self.app_state.save() {
+            // Log error but don't prevent quitting
+            eprintln!("Failed to save app state: {}", e);
+        }
     }
 
     pub fn next(&mut self) {
@@ -151,6 +177,9 @@ impl TUIApp {
                 self.prompt_list.find_and_select(&first.name);
             }
         }
+        
+        // Save state after navigation
+        self.save_state();
     }
 
     pub fn previous(&mut self) {
@@ -185,6 +214,9 @@ impl TUIApp {
                 self.prompt_list.find_and_select(&last.name);
             }
         }
+        
+        // Save state after navigation
+        self.save_state();
     }
 
     pub fn selected_index(&self) -> usize {
@@ -198,6 +230,10 @@ impl TUIApp {
                 .map(|(_, content)| content)
                 .ok()
         })
+    }
+    
+    pub fn get_selected_prompt_name(&self) -> Option<String> {
+        self.prompt_list.get_selected().map(|p| p.name.clone())
     }
 
     pub fn get_prompts(&self) -> &Vec<crate::application::models::PromptMetadata> {

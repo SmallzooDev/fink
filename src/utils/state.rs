@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::fs;
 use serde::{Serialize, Deserialize};
 use crate::utils::error::Result;
@@ -50,6 +50,11 @@ impl AppState {
     }
     
     pub fn state_file_path() -> PathBuf {
+        // Check for test environment variable first
+        if let Ok(test_state_path) = std::env::var("FINK_TEST_STATE_PATH") {
+            return PathBuf::from(test_state_path);
+        }
+        
         Config::config_dir().join("state.json")
     }
     

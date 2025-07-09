@@ -5,3 +5,4 @@ pub mod config;
 pub mod default_prompts;
 pub mod constants;
 pub mod text_scroll;
+pub mod state;

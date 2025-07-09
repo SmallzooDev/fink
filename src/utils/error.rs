@@ -112,6 +112,12 @@ impl From<anyhow::Error> for FinkError {
     }
 }
 
+impl From<serde_json::Error> for FinkError {
+    fn from(error: serde_json::Error) -> Self {
+        FinkError::Storage(StorageError::ParseError(error.to_string()))
+    }
+}
+
 impl FinkError {
     pub fn user_message(&self) -> String {
         match self {
