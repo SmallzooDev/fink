@@ -52,6 +52,7 @@ pub struct TUIApp {
     config: Config,
     config_path: PathBuf,
     app_state: AppState,
+    is_editing_external: bool,
 }
 
 impl TUIApp {
@@ -121,6 +122,7 @@ impl TUIApp {
             config: config.clone(),
             config_path,
             app_state,
+            is_editing_external: false,
         })
     }
 
@@ -285,6 +287,8 @@ impl TUIApp {
         // If there were changes, reload the config
         if let Some(screen) = &self.config_screen {
             self.config = screen.get_config().clone();
+            // Update the application's editor launcher with the new editor
+            self.application.update_editor(self.config.editor());
         }
         self.config_screen = None;
     }
@@ -355,16 +359,39 @@ impl TUIApp {
 
     pub fn edit_selected(&mut self) -> Result<()> {
         if let Some(prompt) = self.prompt_list.get_selected() {
+            // Check if editor is external (VS Code)
+            let is_vscode = self.config.editor() == "code";
+            if is_vscode {
+                self.is_editing_external = true;
+            }
+            
             // Delegate to the application layer
             self.application.edit_prompt(&prompt.name)?;
             
             // Reload prompts after editing
             self.reload_prompts()?;
             
+            // Clear editing state for non-external editors
+            if !is_vscode {
+                self.is_editing_external = false;
+            }
+            
             Ok(())
         } else {
             Err(anyhow::anyhow!("No prompt selected"))
         }
+    }
+    
+    pub fn is_editing_external(&self) -> bool {
+        self.is_editing_external
+    }
+    
+    pub fn finish_external_editing(&mut self) -> Result<()> {
+        self.is_editing_external = false;
+        // Reload prompts to show changes
+        self.reload_prompts()?;
+        self.set_success("Prompt updated successfully!".to_string());
+        Ok(())
     }
 
     pub fn delete_selected(&mut self) -> Result<()> {

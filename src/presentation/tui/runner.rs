@@ -436,6 +436,12 @@ impl EventHandler {
                 KeyCode::BackTab => {
                     config_screen.previous_field();
                 }
+                KeyCode::Left => {
+                    config_screen.previous_editor();
+                }
+                KeyCode::Right => {
+                    config_screen.next_editor();
+                }
                 KeyCode::Char('s') if key.modifiers.contains(event::KeyModifiers::CONTROL) => {
                     if let Err(e) = config_screen.save_config() {
                         app.set_error(format!("Failed to save config: {}", e));
@@ -531,9 +537,17 @@ impl EventHandler {
             }
             KeyCode::Char('e') => {
                 if matches!(app.mode(), AppMode::Management) {
-                    // For now, just mark that edit was requested
-                    // The actual editor launch will be handled in the main loop
-                    app.set_pending_action(Some(crate::presentation::tui::tui::PendingAction::Edit));
+                    // Check if already editing externally before handling the key
+                    let is_editing = app.is_editing_external();
+                    if is_editing {
+                        // If already editing externally, finish the edit
+                        if let Err(e) = app.finish_external_editing() {
+                            app.set_error(format!("Error refreshing prompt: {}", e));
+                        }
+                    } else {
+                        // Start editing
+                        app.set_pending_action(Some(crate::presentation::tui::tui::PendingAction::Edit));
+                    }
                 }
             }
             KeyCode::Char('d') => {

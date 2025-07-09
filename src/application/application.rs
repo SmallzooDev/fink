@@ -14,7 +14,7 @@ use crate::external::{ClipboardManager, editor::EditorLauncher};
 pub struct DefaultPromptApplication {
     repository: Box<dyn PromptRepository>,
     clipboard: RefCell<ClipboardManager>,
-    editor_launcher: EditorLauncher,
+    editor_launcher: RefCell<EditorLauncher>,
 }
 
 impl DefaultPromptApplication {
@@ -26,7 +26,7 @@ impl DefaultPromptApplication {
         Ok(Self {
             repository,
             clipboard,
-            editor_launcher: EditorLauncher::new(),
+            editor_launcher: RefCell::new(EditorLauncher::new()),
         })
     }
     
@@ -39,8 +39,12 @@ impl DefaultPromptApplication {
         Ok(Self {
             repository,
             clipboard,
-            editor_launcher,
+            editor_launcher: RefCell::new(editor_launcher),
         })
+    }
+    
+    pub fn update_editor(&self, editor: &str) {
+        *self.editor_launcher.borrow_mut() = EditorLauncher::with_editor(editor);
     }
     
     // Helper methods for cleaner code
@@ -159,7 +163,7 @@ impl PromptApplication for DefaultPromptApplication {
         let metadata = self.find_prompt_metadata(name)?;
         let file_path = self.get_prompt_file_path(&metadata);
         
-        self.editor_launcher.launch(&file_path)?;
+        self.editor_launcher.borrow().launch(&file_path)?;
         
         Ok(())
     }

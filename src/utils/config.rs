@@ -18,6 +18,10 @@ impl Config {
         &self.editor
     }
     
+    pub fn set_editor(&mut self, editor: String) {
+        self.editor = editor;
+    }
+    
     pub fn storage_path(&self) -> &Path {
         &self.storage_path
     }

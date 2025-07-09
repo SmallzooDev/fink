@@ -84,16 +84,20 @@ clipboard_postfix = ""
         if let Some(config_screen) = app.get_config_screen_mut() {
             use fink::presentation::tui::screens::ConfigField;
             
-            // Should start at Prefix field
+            // Should start at Editor field
+            assert_eq!(config_screen.current_field(), ConfigField::Editor);
+            
+            // Navigate to Prefix field
+            config_screen.next_field();
             assert_eq!(config_screen.current_field(), ConfigField::Prefix);
             
             // Navigate to Postfix field
             config_screen.next_field();
             assert_eq!(config_screen.current_field(), ConfigField::Postfix);
             
-            // Navigate back to Prefix field
+            // Navigate back to Editor field
             config_screen.next_field();
-            assert_eq!(config_screen.current_field(), ConfigField::Prefix);
+            assert_eq!(config_screen.current_field(), ConfigField::Editor);
         } else {
             panic!("Config screen should be available");
         }

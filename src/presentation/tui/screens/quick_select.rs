@@ -186,6 +186,12 @@ impl<'a> QuickSelectScreen<'a> {
             f.render_widget(create_dialog, dialog_area);
         }
         
+        // Render editing dialog if editing externally
+        if self.app.is_editing_external() {
+            let editing_dialog = crate::presentation::tui::components::EditingDialog;
+            editing_dialog.render(f, area);
+        }
+        
         // Render error message if present
         if let Some(error_msg) = self.app.get_error_message() {
             let error_width = 60.min(area.width - 4);

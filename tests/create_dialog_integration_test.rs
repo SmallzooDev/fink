@@ -3,6 +3,24 @@ use fink::presentation::tui::components::{CreateDialog, CreateTemplate};
 use tempfile::tempdir;
 use std::fs;
 
+fn create_test_app(temp_path: &std::path::Path) -> TUIApp {
+    // Create config with the test path
+    let config_content = format!(
+        r#"editor = "vim"
+storage_path = "{}"
+clipboard_prefix = ""
+clipboard_postfix = ""
+"#,
+        temp_path.to_str().unwrap()
+    );
+    let config_path = temp_path.join("config.toml");
+    fs::write(&config_path, config_content).unwrap();
+    let config = fink::utils::config::Config::load_from_file(&config_path).unwrap();
+    
+    // Create TUIApp with the config
+    TUIApp::new_with_config(&config).unwrap()
+}
+
 #[test]
 fn test_create_dialog_integration() {
     // Setup test environment
@@ -14,7 +32,7 @@ fn test_create_dialog_integration() {
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create TUIApp
-    let mut app = TUIApp::new(temp_path.clone()).unwrap();
+    let mut app = create_test_app(&temp_path);
     
     // Open create dialog
     app.create_new_prompt().unwrap();
@@ -35,7 +53,7 @@ fn test_create_prompt_with_dialog() {
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create TUIApp
-    let mut app = TUIApp::new(temp_path.clone()).unwrap();
+    let mut app = create_test_app(&temp_path);
     
     // Open create dialog
     app.create_new_prompt().unwrap();
@@ -81,7 +99,7 @@ fn test_create_prompt_with_template() {
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create TUIApp
-    let mut app = TUIApp::new(temp_path.clone()).unwrap();
+    let mut app = create_test_app(&temp_path);
     
     // Open create dialog
     app.create_new_prompt().unwrap();
@@ -156,7 +174,7 @@ fn test_create_prompt_with_specific_type() {
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create TUIApp
-    let mut app = TUIApp::new(temp_path.clone()).unwrap();
+    let mut app = create_test_app(&temp_path);
     
     // Open create dialog
     app.create_new_prompt().unwrap();
@@ -206,7 +224,7 @@ fn test_cancel_create_dialog() {
     fs::create_dir_all(&jkms_path).unwrap();
     
     // Create TUIApp
-    let mut app = TUIApp::new(temp_path.clone()).unwrap();
+    let mut app = create_test_app(&temp_path);
     
     // Open create dialog
     app.create_new_prompt().unwrap();

@@ -10,14 +10,18 @@ use crate::utils::config::Config;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ConfigField {
+    Editor,
     Prefix,
     Postfix,
 }
+
+const EDITOR_OPTIONS: &[&str] = &["vim", "nvim", "hx", "vi", "code"];
 
 pub struct ConfigScreen {
     config: Config,
     config_path: std::path::PathBuf,
     current_field: ConfigField,
+    editor_selection: usize,
     prefix_input: String,
     postfix_input: String,
     has_changes: bool,
@@ -30,13 +34,21 @@ impl ConfigScreen {
     }
     
     pub fn new_with_path(config: Config, config_path: std::path::PathBuf) -> Self {
+        // Find the current editor in the options list
+        let current_editor = config.editor();
+        let editor_selection = EDITOR_OPTIONS
+            .iter()
+            .position(|&e| e == current_editor)
+            .unwrap_or(0); // Default to vim if not found
+            
         let prefix_input = config.clipboard_prefix().to_string();
         let postfix_input = config.clipboard_postfix().to_string();
         
         Self {
             config,
             config_path,
-            current_field: ConfigField::Prefix,
+            current_field: ConfigField::Editor,
+            editor_selection,
             prefix_input,
             postfix_input,
             has_changes: false,
@@ -50,17 +62,46 @@ impl ConfigScreen {
     
     pub fn next_field(&mut self) {
         self.current_field = match self.current_field {
+            ConfigField::Editor => ConfigField::Prefix,
             ConfigField::Prefix => ConfigField::Postfix,
-            ConfigField::Postfix => ConfigField::Prefix,
+            ConfigField::Postfix => ConfigField::Editor,
         };
     }
     
     pub fn previous_field(&mut self) {
-        self.next_field(); // Only two fields, so next is same as previous
+        self.current_field = match self.current_field {
+            ConfigField::Editor => ConfigField::Postfix,
+            ConfigField::Prefix => ConfigField::Editor,
+            ConfigField::Postfix => ConfigField::Prefix,
+        };
+    }
+    
+    pub fn next_editor(&mut self) {
+        if self.current_field == ConfigField::Editor {
+            self.editor_selection = (self.editor_selection + 1) % EDITOR_OPTIONS.len();
+            self.has_changes = true;
+            self.saved_message = None;
+        }
+    }
+    
+    pub fn previous_editor(&mut self) {
+        if self.current_field == ConfigField::Editor {
+            if self.editor_selection == 0 {
+                self.editor_selection = EDITOR_OPTIONS.len() - 1;
+            } else {
+                self.editor_selection -= 1;
+            }
+            self.has_changes = true;
+            self.saved_message = None;
+        }
     }
     
     pub fn add_char(&mut self, c: char) {
         match self.current_field {
+            ConfigField::Editor => {
+                // Editor is selected from options, not typed
+                return;
+            }
             ConfigField::Prefix => {
                 self.prefix_input.push(c);
                 self.has_changes = true;
@@ -75,6 +116,10 @@ impl ConfigScreen {
     
     pub fn delete_char(&mut self) {
         match self.current_field {
+            ConfigField::Editor => {
+                // Editor is selected from options, not typed
+                return;
+            }
             ConfigField::Prefix => {
                 self.prefix_input.pop();
                 self.has_changes = true;
@@ -88,6 +133,7 @@ impl ConfigScreen {
     }
     
     pub fn save_config(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        self.config.set_editor(EDITOR_OPTIONS[self.editor_selection].to_string());
         self.config.set_clipboard_prefix(self.prefix_input.clone());
         self.config.set_clipboard_postfix(self.postfix_input.clone());
         
@@ -109,7 +155,7 @@ impl ConfigScreen {
     pub fn render(&self, f: &mut Frame, area: Rect) {
         // Calculate modal size
         let modal_width = 70;
-        let modal_height = 20;
+        let modal_height = 24;
         
         let modal_area = centered_rect(modal_width, modal_height, area);
         
@@ -133,6 +179,7 @@ impl ConfigScreen {
             .margin(1)
             .constraints([
                 Constraint::Length(3), // Title
+                Constraint::Length(3), // Editor field
                 Constraint::Length(3), // Prefix field
                 Constraint::Length(3), // Postfix field
                 Constraint::Length(3), // Status message
@@ -142,10 +189,43 @@ impl ConfigScreen {
             .split(inner);
         
         // Title
-        let title = Paragraph::new("Configure Clipboard Prefix and Postfix")
+        let title = Paragraph::new("Configure Editor and Clipboard Settings")
             .style(Style::default().fg(Color::White).add_modifier(Modifier::BOLD))
             .alignment(Alignment::Center);
         f.render_widget(title, chunks[0]);
+        
+        // Editor selection
+        let editor_style = if self.current_field == ConfigField::Editor {
+            Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
+        } else {
+            Style::default().fg(Color::Gray)
+        };
+        
+        // Create editor selection display
+        let mut editor_display = String::from("< ");
+        for (i, &editor) in EDITOR_OPTIONS.iter().enumerate() {
+            if i == self.editor_selection {
+                editor_display.push_str(&format!("[{}]", editor));
+            } else {
+                editor_display.push(' ');
+                editor_display.push_str(editor);
+                editor_display.push(' ');
+            }
+            if i < EDITOR_OPTIONS.len() - 1 {
+                editor_display.push_str(" | ");
+            }
+        }
+        editor_display.push_str(" >");
+        
+        let editor_block = Block::default()
+            .borders(Borders::ALL)
+            .title("Editor (use ← → to select)")
+            .border_style(editor_style);
+        
+        let editor_widget = Paragraph::new(editor_display)
+            .block(editor_block)
+            .alignment(Alignment::Center);
+        f.render_widget(editor_widget, chunks[1]);
         
         // Prefix input
         let prefix_style = if self.current_field == ConfigField::Prefix {
@@ -162,7 +242,7 @@ impl ConfigScreen {
         let prefix_field = InputField::new(&self.prefix_input)
             .show_cursor(self.current_field == ConfigField::Prefix)
             .block(prefix_block);
-        f.render_widget(prefix_field, chunks[1]);
+        f.render_widget(prefix_field, chunks[2]);
         
         // Postfix input
         let postfix_style = if self.current_field == ConfigField::Postfix {
@@ -179,19 +259,19 @@ impl ConfigScreen {
         let postfix_field = InputField::new(&self.postfix_input)
             .show_cursor(self.current_field == ConfigField::Postfix)
             .block(postfix_block);
-        f.render_widget(postfix_field, chunks[2]);
+        f.render_widget(postfix_field, chunks[3]);
         
         // Status message
         if let Some(msg) = &self.saved_message {
             let status = Paragraph::new(msg.as_str())
                 .style(Style::default().fg(Color::Green))
                 .alignment(Alignment::Center);
-            f.render_widget(status, chunks[3]);
+            f.render_widget(status, chunks[4]);
         } else if self.has_changes {
             let status = Paragraph::new("(unsaved changes)")
                 .style(Style::default().fg(Color::Yellow).add_modifier(Modifier::DIM))
                 .alignment(Alignment::Center);
-            f.render_widget(status, chunks[3]);
+            f.render_widget(status, chunks[4]);
         }
         
         // Help text
@@ -211,7 +291,7 @@ impl ConfigScreen {
         
         let help = Paragraph::new(help_lines)
             .alignment(Alignment::Center);
-        f.render_widget(help, chunks[5]);
+        f.render_widget(help, chunks[6]);
     }
 }
 

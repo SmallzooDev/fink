@@ -9,6 +9,7 @@ pub mod interactive_build_panel;
 pub mod init_dialog;
 pub mod type_prompts_dialog;
 pub mod input_field;
+pub mod editing_dialog;
 
 pub use prompt_list::PromptList;
 pub use tag_dialog::{TagManagementDialog, TagInputMode};
@@ -18,3 +19,4 @@ pub use build_panel::BuildPanel;
 pub use interactive_build_panel::{InteractiveBuildPanel, BuildStep};
 pub use init_dialog::InitDialog;
 pub use type_prompts_dialog::TypePromptsDialog;
+pub use editing_dialog::EditingDialog;
