@@ -424,6 +424,35 @@ impl EventHandler {
         Ok(())
     }
     
+    fn handle_config_mode(&self, app: &mut TUIApp, key: &KeyEvent) -> Result<()> {
+        if let Some(config_screen) = app.get_config_screen_mut() {
+            match key.code {
+                KeyCode::Esc => {
+                    app.exit_config_mode();
+                }
+                KeyCode::Tab => {
+                    config_screen.next_field();
+                }
+                KeyCode::BackTab => {
+                    config_screen.previous_field();
+                }
+                KeyCode::Char('s') if key.modifiers.contains(event::KeyModifiers::CONTROL) => {
+                    if let Err(e) = config_screen.save_config() {
+                        app.set_error(format!("Failed to save config: {}", e));
+                    }
+                }
+                KeyCode::Backspace => {
+                    config_screen.delete_char();
+                }
+                KeyCode::Char(c) => {
+                    config_screen.add_char(c);
+                }
+                _ => {}
+            }
+        }
+        Ok(())
+    }
+    
     fn handle_search_mode(&self, app: &mut TUIApp, key: &KeyEvent) -> Result<()> {
         match key.code {
             KeyCode::Esc => {
@@ -538,6 +567,12 @@ impl EventHandler {
                     app.enter_build_mode();
                 }
             }
+            KeyCode::Char('c') => {
+                // Enter config mode from QuickSelect or Management mode
+                if matches!(app.mode(), AppMode::QuickSelect | AppMode::Management) {
+                    app.enter_config_mode();
+                }
+            }
             KeyCode::Char('/') => {
                 app.activate_search();
             }
@@ -587,6 +622,11 @@ impl EventHandler {
             if app.is_build_mode() {
                 return self.handle_build_mode(app, &key);
             }
+            
+            // Handle config mode
+            if app.is_config_mode() {
+                return self.handle_config_mode(app, &key);
+            }
 
             // Handle search mode
             if app.is_search_active() {
@@ -634,6 +674,13 @@ fn run_with_mode(_base_path: PathBuf, config: &Config, manage_mode: bool) -> Res
             if app.is_build_mode() {
                 if let Some(panel) = app.get_interactive_build_panel_mut() {
                     panel.render(f, f.size());
+                }
+            }
+            
+            // Handle config mode rendering
+            if app.is_config_mode() {
+                if let Some(config_screen) = app.get_config_screen() {
+                    config_screen.render(f, f.size());
                 }
             }
         })?;

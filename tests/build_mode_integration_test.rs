@@ -6,6 +6,24 @@ mod tests {
     use tempfile::tempdir;
     use std::fs;
 
+    fn create_test_app(temp_path: &std::path::Path) -> TUIApp {
+        // Create config with the test path
+        let config_content = format!(
+            r#"editor = "vim"
+storage_path = "{}"
+clipboard_prefix = ""
+clipboard_postfix = ""
+"#,
+            temp_path.to_str().unwrap()
+        );
+        let config_path = temp_path.join("config.toml");
+        fs::write(&config_path, config_content).unwrap();
+        let config = fink::utils::config::Config::load_from_file(&config_path).unwrap();
+        
+        // Create TUIApp with the config
+        TUIApp::new_with_config(&config).unwrap()
+    }
+
     #[test]
     fn should_enter_build_mode_when_b_key_pressed() {
         // Setup test environment
@@ -35,7 +53,7 @@ type: "context"
         fs::write(jkms_path.join("context.md"), context_prompt).unwrap();
         
         // Create TUIApp and event handler
-        let mut app = TUIApp::new(temp_path.clone()).unwrap();
+        let mut app = create_test_app(&temp_path);
         app.reload_prompts().unwrap();
         
         let event_handler = EventHandler::new();
@@ -80,7 +98,7 @@ type: "instruction"
         fs::write(jkms_path.join("test.md"), prompt).unwrap();
         
         // Create TUIApp and enter build mode
-        let mut app = TUIApp::new(temp_path.clone()).unwrap();
+        let mut app = create_test_app(&temp_path);
         app.reload_prompts().unwrap();
         app.enter_build_mode();
         
@@ -128,7 +146,7 @@ type: "instruction"
         }
         
         // Create TUIApp and enter build mode
-        let mut app = TUIApp::new(temp_path.clone()).unwrap();
+        let mut app = create_test_app(&temp_path);
         app.reload_prompts().unwrap();
         app.enter_build_mode();
         

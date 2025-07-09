@@ -1,6 +1,7 @@
 use crate::application::application::DefaultPromptApplication;
 use crate::application::traits::PromptApplication;
 use crate::presentation::tui::components::{PromptList, confirmation_dialog::{ConfirmationDialog as Dialog, ConfirmationAction}, TagManagementDialog, TagFilterDialog, CreateDialog, BuildPanel, InteractiveBuildPanel};
+use crate::presentation::tui::screens::ConfigScreen;
 use crate::utils::config::Config;
 use crate::utils::constants::PROMPTS_DIR;
 use anyhow::Result;
@@ -15,6 +16,7 @@ pub enum AppMode {
     QuickSelect,
     Management,
     Build,
+    Config,
 }
 
 #[derive(Debug, PartialEq)]
@@ -45,6 +47,9 @@ pub struct TUIApp {
     success_message: Option<String>,
     init_dialog_active: bool,
     type_prompts_dialog_active: bool,
+    config_screen: Option<ConfigScreen>,
+    config: Config,
+    config_path: PathBuf,
 }
 
 impl TUIApp {
@@ -53,46 +58,25 @@ impl TUIApp {
     }
     
     pub fn new_with_config(config: &Config) -> Result<Self> {
-        Self::new_with_mode_and_config(config, AppMode::QuickSelect)
+        // For tests, use a temp path
+        let config_path = std::env::temp_dir().join("fink_test_config.toml");
+        Self::new_with_mode_and_config_path(config, AppMode::QuickSelect, config_path)
     }
 
-    pub fn new_with_mode(base_path: PathBuf, mode: AppMode) -> Result<Self> {
-        let application = DefaultPromptApplication::new(base_path.clone())?;
-        let prompts_metadata = application.list_prompts(None)?;
-        let prompt_list = PromptList::new(prompts_metadata.clone());
-        
-        // Check if this is first launch (no .initialized flag and no prompts)
-        let prompts_dir = base_path.join(PROMPTS_DIR);
-        let init_flag = prompts_dir.join(".initialized");
-        let is_first_launch = !init_flag.exists() && prompts_metadata.is_empty();
-
-        Ok(Self {
-            mode,
-            should_quit: false,
-            prompt_list,
-            application,
-            pending_action: None,
-            confirmation_dialog: None,
-            search_active: false,
-            search_query: String::new(),
-            tag_filter_active: false,
-            active_tag_filters: HashSet::new(),
-            tag_management_active: false,
-            tag_dialog: None,
-            tag_filter_dialog_active: false,
-            tag_filter_dialog: None,
-            create_dialog_active: false,
-            create_dialog: None,
-            build_panel: None,
-            interactive_build_panel: None,
-            error_message: None,
-            success_message: None,
-            init_dialog_active: is_first_launch,
-            type_prompts_dialog_active: false,
-        })
+    pub fn new_with_mode(_base_path: PathBuf, mode: AppMode) -> Result<Self> {
+        // Load the actual config from the default location
+        let config_path = Config::default_config_path();
+        let config = Config::load_or_create(&config_path)?;
+        Self::new_with_mode_and_config_path(&config, mode, config_path)
     }
     
     pub fn new_with_mode_and_config(config: &Config, mode: AppMode) -> Result<Self> {
+        // For compatibility, use default path
+        let config_path = Config::default_config_path();
+        Self::new_with_mode_and_config_path(config, mode, config_path)
+    }
+    
+    pub fn new_with_mode_and_config_path(config: &Config, mode: AppMode, config_path: PathBuf) -> Result<Self> {
         let application = DefaultPromptApplication::with_config(config)?;
         let prompts_metadata = application.list_prompts(None)?;
         let prompt_list = PromptList::new(prompts_metadata.clone());
@@ -125,6 +109,9 @@ impl TUIApp {
             success_message: None,
             init_dialog_active: is_first_launch,
             type_prompts_dialog_active: false,
+            config_screen: None,
+            config: config.clone(),
+            config_path,
         })
     }
 
@@ -251,6 +238,36 @@ impl TUIApp {
         self.build_panel = None;
         self.interactive_build_panel = None;
     }
+    
+    pub fn enter_config_mode(&mut self) {
+        self.mode = AppMode::Config;
+        self.config_screen = Some(ConfigScreen::new_with_path(self.config.clone(), self.config_path.clone()));
+    }
+    
+    pub fn exit_config_mode(&mut self) {
+        self.mode = AppMode::QuickSelect;
+        // If there were changes, reload the config
+        if let Some(screen) = &self.config_screen {
+            self.config = screen.get_config().clone();
+        }
+        self.config_screen = None;
+    }
+    
+    pub fn is_config_mode(&self) -> bool {
+        matches!(self.mode, AppMode::Config)
+    }
+    
+    pub fn get_config_screen(&self) -> Option<&ConfigScreen> {
+        self.config_screen.as_ref()
+    }
+    
+    pub fn get_config_screen_mut(&mut self) -> Option<&mut ConfigScreen> {
+        self.config_screen.as_mut()
+    }
+    
+    pub fn get_config(&self) -> &Config {
+        &self.config
+    }
 
     pub fn get_build_prompts(&self) -> Vec<crate::application::models::PromptMetadata> {
         use crate::application::models::PromptType;
@@ -264,7 +281,27 @@ impl TUIApp {
 
     pub fn copy_selected_to_clipboard(&mut self) -> Result<()> {
         if let Some(content) = self.get_selected_content() {
-            self.application.copy_to_clipboard(&content)?;
+            // Build content with prefix/postfix and proper newlines
+            let mut final_content = String::new();
+            
+            // Add prefix with newline if prefix exists
+            let prefix = self.config.clipboard_prefix();
+            if !prefix.is_empty() {
+                final_content.push_str(prefix);
+                final_content.push('\n');
+            }
+            
+            // Add main content
+            final_content.push_str(&content);
+            
+            // Add postfix with newline before it if postfix exists
+            let postfix = self.config.clipboard_postfix();
+            if !postfix.is_empty() {
+                final_content.push('\n');
+                final_content.push_str(postfix);
+            }
+            
+            self.application.copy_to_clipboard(&final_content)?;
             Ok(())
         } else {
             Err(anyhow::anyhow!("No prompt selected"))
@@ -276,6 +313,7 @@ impl TUIApp {
             AppMode::QuickSelect => AppMode::Management,
             AppMode::Management => AppMode::QuickSelect,
             AppMode::Build => AppMode::QuickSelect,
+            AppMode::Config => AppMode::QuickSelect,
         };
     }
 

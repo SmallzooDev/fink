@@ -5,6 +5,24 @@ mod tests {
     use tempfile::tempdir;
     use std::fs;
 
+    fn create_test_app(temp_path: &std::path::Path) -> TUIApp {
+        // Create config with the test path
+        let config_content = format!(
+            r#"editor = "vim"
+storage_path = "{}"
+clipboard_prefix = ""
+clipboard_postfix = ""
+"#,
+            temp_path.to_str().unwrap()
+        );
+        let config_path = temp_path.join("config.toml");
+        fs::write(&config_path, config_content).unwrap();
+        let config = fink::utils::config::Config::load_from_file(&config_path).unwrap();
+        
+        // Create TUIApp with the config
+        TUIApp::new_with_config(&config).unwrap()
+    }
+
     #[test]
     fn should_combine_prompts_in_correct_order() {
         // Setup test environment
@@ -42,7 +60,7 @@ Output format: JSON"#;
         fs::write(jkms_path.join("output.md"), output_prompt).unwrap();
         
         // Create TUIApp and enter build mode
-        let mut app = TUIApp::new(temp_path.clone()).unwrap();
+        let mut app = create_test_app(&temp_path);
         app.reload_prompts().unwrap();
         app.enter_build_mode();
         
@@ -97,7 +115,7 @@ Test content"#;
         fs::write(jkms_path.join("test.md"), prompt).unwrap();
         
         // Create TUIApp and enter build mode
-        let mut app = TUIApp::new(temp_path.clone()).unwrap();
+        let mut app = create_test_app(&temp_path);
         app.reload_prompts().unwrap();
         app.enter_build_mode();
         
@@ -136,7 +154,7 @@ Whole prompt content"#;
         fs::write(jkms_path.join("whole.md"), whole_prompt).unwrap();
         
         // Create TUIApp and enter build mode
-        let mut app = TUIApp::new(temp_path.clone()).unwrap();
+        let mut app = create_test_app(&temp_path);
         app.reload_prompts().unwrap();
         app.enter_build_mode();
         

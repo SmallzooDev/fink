@@ -5,6 +5,24 @@ mod tests {
     use tempfile::tempdir;
     use std::fs;
 
+    fn create_test_app(temp_path: &std::path::Path) -> TUIApp {
+        // Create config with the test path
+        let config_content = format!(
+            r#"editor = "vim"
+storage_path = "{}"
+clipboard_prefix = ""
+clipboard_postfix = ""
+"#,
+            temp_path.to_str().unwrap()
+        );
+        let config_path = temp_path.join("config.toml");
+        fs::write(&config_path, config_content).unwrap();
+        let config = fink::utils::config::Config::load_from_file(&config_path).unwrap();
+        
+        // Create TUIApp with the config
+        TUIApp::new_with_config(&config).unwrap()
+    }
+
     #[test]
     fn should_have_build_mode_in_app_mode_enum() {
         // This test will verify that AppMode::Build exists
@@ -88,7 +106,7 @@ type: "whole"
         fs::write(jkms_path.join("whole.md"), whole_prompt).unwrap();
         
         // Create TUIApp and reload prompts
-        let mut app = TUIApp::new(temp_path.clone()).unwrap();
+        let mut app = create_test_app(&temp_path);
         app.reload_prompts().unwrap();
         
         // Enter build mode

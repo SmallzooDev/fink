@@ -1,6 +1,5 @@
-use fink::utils::default_prompts::{get_type_specific_prompts, TypeSpecificPrompt};
+use fink::utils::default_prompts::get_type_specific_prompts;
 use fink::application::models::PromptType;
-use std::collections::HashMap;
 
 #[test]
 fn test_type_specific_prompts_exist_for_all_types() {

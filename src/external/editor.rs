@@ -20,18 +20,18 @@ impl EditorLauncher {
     }
     
     pub fn get_editor(&self) -> String {
-        // First check environment variables (they have highest priority)
+        // First check if we have a config editor (config has highest priority)
+        if let Some(ref editor) = self.config_editor {
+            return editor.clone();
+        }
+        
+        // Then check environment variables
         if let Ok(editor) = std::env::var("EDITOR") {
             return editor;
         }
         
         if let Ok(visual) = std::env::var("VISUAL") {
             return visual;
-        }
-        
-        // Then check if we have a config editor
-        if let Some(ref editor) = self.config_editor {
-            return editor.clone();
         }
         
         // Finally fall back to default

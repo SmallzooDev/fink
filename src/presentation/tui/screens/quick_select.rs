@@ -45,6 +45,7 @@ impl<'a> QuickSelectScreen<'a> {
             AppMode::QuickSelect => "Quick Select",
             AppMode::Management => "Management Mode",
             AppMode::Build => "Build Mode",
+            AppMode::Config => "Configuration",
         };
         
         // Add active filters to header if any
@@ -108,9 +109,10 @@ impl<'a> QuickSelectScreen<'a> {
         
         // Mode selector box
         let mode_text = match self.app.mode() {
-            AppMode::QuickSelect => "[Quick] m:Manage b:Build",
-            AppMode::Management => "[Manage] m:Quick b:Build",
+            AppMode::QuickSelect => "[Quick] m:Manage b:Build c:Config",
+            AppMode::Management => "[Manage] m:Quick b:Build c:Config",
             AppMode::Build => "[Build] m:Quick",
+            AppMode::Config => "[Config] Esc:Exit",
         };
         let mode_selector = Paragraph::new(mode_text)
             .style(Style::default().fg(Color::Cyan))
@@ -128,6 +130,7 @@ impl<'a> QuickSelectScreen<'a> {
                 AppMode::QuickSelect => "↑↓: Navigate  Enter: Copy  s: Star  /: Search  f: Filter  F: Clear Filters  Esc: Exit",
                 AppMode::Management => "↑↓: Navigate  e: Edit  d: Delete  n: New  s: Star  t: Tags  f: Filter  F: Clear  /: Search  Esc: Exit",
                 AppMode::Build => "↑↓: Navigate  Space: Select  Enter: Combine  Esc: Back",
+                AppMode::Config => "Tab: Switch fields  Ctrl+S: Save  Esc: Exit",
             }
         };
         let commands = Paragraph::new(commands_text)

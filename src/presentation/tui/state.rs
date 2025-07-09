@@ -137,6 +137,7 @@ impl UIState {
                     AppMode::QuickSelect => AppMode::Management,
                     AppMode::Management => AppMode::QuickSelect,
                     AppMode::Build => AppMode::QuickSelect,
+                    AppMode::Config => AppMode::QuickSelect,
                 };
             }
             UIEvent::Quit => {

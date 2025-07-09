@@ -4,6 +4,24 @@ use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use tempfile::tempdir;
 use std::fs;
 
+fn create_test_app(temp_path: &std::path::Path) -> TUIApp {
+    // Create config with the test path
+    let config_content = format!(
+        r#"editor = "vim"
+storage_path = "{}"
+clipboard_prefix = ""
+clipboard_postfix = ""
+"#,
+        temp_path.to_str().unwrap()
+    );
+    let config_path = temp_path.join("config.toml");
+    fs::write(&config_path, config_content).unwrap();
+    let config = fink::utils::config::Config::load_from_file(&config_path).unwrap();
+    
+    // Create TUIApp with the config
+    TUIApp::new_with_config(&config).unwrap()
+}
+
 #[test]
 fn test_unicode_copy_paste_scenarios() {
     // Setup test environment
@@ -34,7 +52,7 @@ This is a test prompt."#, filename.trim_end_matches(".md"), content);
     }
     
     // Create TUIApp
-    let mut app = TUIApp::new(temp_path).unwrap();
+    let mut app = create_test_app(&temp_path);
     
     // Test that Unicode prompts are loaded correctly
     let prompts = app.get_filtered_prompts();
@@ -70,7 +88,7 @@ tags: ["test"]
 ---
 Test"#).unwrap();
     
-    let mut app = TUIApp::new(temp_path).unwrap();
+    let mut app = create_test_app(&temp_path);
     let event_handler = EventHandler::new();
     
     // Test in QuickSelect mode
@@ -115,7 +133,7 @@ tags: ["test"]
 ---
 Test"#).unwrap();
     
-    let mut app = TUIApp::new(temp_path).unwrap();
+    let mut app = create_test_app(&temp_path);
     let event_handler = EventHandler::new();
     
     // Test complex Unicode sequences
@@ -182,7 +200,7 @@ Test"#, filename.trim_end_matches(".md"), tags_str);
         fs::write(&prompt_path, frontmatter).unwrap();
     }
     
-    let mut app = TUIApp::new(temp_path).unwrap();
+    let app = create_test_app(&temp_path);
     
     // Test that Unicode tags are loaded
     let prompts = app.get_filtered_prompts();
