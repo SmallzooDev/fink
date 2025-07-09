@@ -1,5 +1,49 @@
 # Changelog
 
+## [0.1.4] - 2025-01-09
+
+### Added
+- **Config Mode** - New configuration mode accessible with 'c' key
+  - Configure clipboard prefix/postfix that gets added to all copied prompts
+  - Select preferred editor (vim, nvim, hx, vi, code) with arrow keys
+  - Save configuration with Ctrl+S
+- **State Persistence** - Application now remembers your cursor position between sessions
+  - Automatically saves state when navigating or quitting
+  - Restores last selected prompt when reopening the app
+  - State saved to `~/.config/fink/state.json`
+- **VS Code Integration** - Full support for Visual Studio Code as an editor
+  - Platform-specific launching (macOS uses `open` command)
+  - Visual feedback dialog when editing with external editors
+  - Press 'e' again while editing to refresh the prompt
+- **Text Scrolling** - Input fields now properly scroll when text exceeds visible width
+  - Applies to search bar, tag filter, and all text input fields
+  - Cursor position properly maintained during scrolling
+
+### Changed
+- **Editor Priority** - Config file editor setting now takes precedence over EDITOR environment variable
+- **Path Handling** - Improved path expansion for `~` in storage paths
+- **Code Quality** - Major refactoring to fix all clippy warnings
+  - Renamed modules to avoid inception issues (`application/app.rs`, `tui/app.rs`)
+  - Improved error handling with proper use of `if let` patterns
+  - Added proper `Default` implementations
+  - Removed redundant code patterns
+
+### Fixed
+- **Config System**
+  - Fixed issue where test runs would corrupt user's actual config file
+  - Added proper test isolation with `FINK_TEST_CONFIG_PATH` environment variable
+  - Fixed automatic removal of `/prompts` suffix from storage path
+- **Key Bindings** - Removed hjkl navigation keys that conflicted with text input
+- **Clipboard** - Added newlines after prefix and before postfix for better formatting
+- **External Editor** - Fixed VS Code launching on macOS
+- **Borrow Checker** - Fixed multiple borrow checker issues with RefCell usage
+
+### Technical Improvements
+- Added `RefCell` for interior mutability in editor launcher
+- Improved module structure and naming conventions
+- Enhanced test coverage and test isolation
+- Better separation of concerns in the codebase
+
 ## [0.1.3] - 2025-01-08
 
 ### Added
