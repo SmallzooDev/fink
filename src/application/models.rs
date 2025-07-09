@@ -1,20 +1,15 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Hash, Default)]
 pub enum PromptType {
     Instruction,
     Context,
     InputIndicator,
     OutputIndicator,
     Etc,
+    #[default]
     Whole,
-}
-
-impl Default for PromptType {
-    fn default() -> Self {
-        PromptType::Whole
-    }
 }
 
 impl fmt::Display for PromptType {

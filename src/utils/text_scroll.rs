@@ -1,4 +1,5 @@
 /// Calculate the visible portion of text that should be displayed in a fixed-width area
+#[derive(Default)]
 pub struct ScrollableText {
     cursor_position: usize,
     view_offset: usize,
@@ -6,10 +7,7 @@ pub struct ScrollableText {
 
 impl ScrollableText {
     pub fn new() -> Self {
-        Self {
-            cursor_position: 0,
-            view_offset: 0,
-        }
+        Self::default()
     }
     
     /// Get the visible portion of text that fits within the given width

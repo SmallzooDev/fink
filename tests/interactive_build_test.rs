@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use fink::presentation::tui::tui::TUIApp;
+    use fink::presentation::tui::app::TUIApp;
     use fink::presentation::tui::components::BuildStep;
     use fink::application::models::PromptType;
     use tempfile::tempdir;

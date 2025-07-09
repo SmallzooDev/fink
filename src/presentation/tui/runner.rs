@@ -1,4 +1,4 @@
-use crate::presentation::tui::tui::{TUIApp, AppMode};
+use crate::presentation::tui::app::{TUIApp, AppMode};
 use crate::presentation::tui::screens::QuickSelectScreen;
 use crate::utils::config::Config;
 use anyhow::Result;
@@ -546,7 +546,7 @@ impl EventHandler {
                         }
                     } else {
                         // Start editing
-                        app.set_pending_action(Some(crate::presentation::tui::tui::PendingAction::Edit));
+                        app.set_pending_action(Some(crate::presentation::tui::app::PendingAction::Edit));
                     }
                 }
             }
@@ -707,7 +707,7 @@ fn run_with_mode(_base_path: PathBuf, config: &Config, manage_mode: bool) -> Res
         // Handle pending actions that require exiting TUI temporarily
         if let Some(action) = app.take_pending_action() {
             match action {
-                crate::presentation::tui::tui::PendingAction::Edit => {
+                crate::presentation::tui::app::PendingAction::Edit => {
                     // Exit TUI temporarily
                     disable_raw_mode()?;
                     execute!(io::stdout(), terminal::LeaveAlternateScreen)?;

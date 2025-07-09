@@ -1,4 +1,4 @@
-use crate::presentation::tui::tui::{TUIApp, AppMode};
+use crate::presentation::tui::app::{TUIApp, AppMode};
 use crate::presentation::tui::components::search::HighlightedText;
 use crate::presentation::tui::components::input_field::InputField;
 use ratatui::{

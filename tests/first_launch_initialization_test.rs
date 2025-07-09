@@ -1,4 +1,4 @@
-use fink::presentation::tui::tui::{TUIApp, AppMode};
+use fink::presentation::tui::app::{TUIApp, AppMode};
 use fink::presentation::tui::runner::EventHandler;
 use fink::utils::config::Config;
 use crossterm::event::{Event, KeyCode, KeyEvent};

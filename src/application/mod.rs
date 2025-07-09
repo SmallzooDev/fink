@@ -1,6 +1,6 @@
 pub mod models;
 pub mod repository;
-pub mod application;
+pub mod app;
 pub mod traits;
 
 pub use models::*;

@@ -1,4 +1,4 @@
-use fink::presentation::tui::tui::TUIApp;
+use fink::presentation::tui::app::TUIApp;
 use fink::utils::text_scroll::get_visible_text_end_aligned;
 use tempfile::tempdir;
 

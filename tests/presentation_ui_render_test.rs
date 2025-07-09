@@ -1,5 +1,5 @@
 use fink::presentation::tui::screens::QuickSelectScreen;
-use fink::presentation::tui::tui::{TUIApp, AppMode};
+use fink::presentation::tui::app::{TUIApp, AppMode};
 use ratatui::Terminal;
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;

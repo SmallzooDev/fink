@@ -50,7 +50,7 @@ impl DefaultPromptApplication {
     // Helper methods for cleaner code
     fn find_prompt_metadata(&self, name: &str) -> Result<PromptMetadata> {
         self.repository.find_by_name(name)
-            .map_err(|e| FinkError::from(e))?
+            .map_err(FinkError::from)?
             .ok_or_else(|| FinkError::Prompt(PromptError::NotFound(name.to_string())))
     }
     
@@ -65,7 +65,7 @@ impl DefaultPromptApplication {
 impl PromptApplication for DefaultPromptApplication {
     fn list_prompts(&self, filter: Option<PromptFilter>) -> Result<Vec<PromptMetadata>> {
         let mut prompts = self.repository.list_all()
-            .map_err(|e| FinkError::from(e))?;
+            .map_err(FinkError::from)?;
         
         if let Some(filter) = filter {
             if let Some(tags) = filter.tags {
@@ -80,7 +80,7 @@ impl PromptApplication for DefaultPromptApplication {
         let metadata = self.find_prompt_metadata(identifier)?;
         
         let content = self.repository.get_content(&metadata.file_path)
-            .map_err(|e| FinkError::from(e))?;
+            .map_err(FinkError::from)?;
         
         Ok((metadata, content))
     }
@@ -92,7 +92,7 @@ impl PromptApplication for DefaultPromptApplication {
 
     fn search_prompts(&self, query: &str, search_type: SearchType) -> Result<Vec<PromptMetadata>> {
         self.repository.search(query, search_type)
-            .map_err(|e| FinkError::from(e))
+            .map_err(FinkError::from)
     }
 
     fn create_prompt(&self, name: &str, template: Option<&str>) -> Result<()> {
@@ -107,7 +107,7 @@ impl PromptApplication for DefaultPromptApplication {
         
         // Create the prompt using repository
         self.repository.create_prompt(&normalized_name, &content)
-            .map_err(|e| FinkError::from(e))?;
+            .map_err(FinkError::from)?;
         Ok(())
     }
 
@@ -123,7 +123,7 @@ impl PromptApplication for DefaultPromptApplication {
         
         // Create the prompt using repository
         self.repository.create_prompt(&normalized_name, &prompt_content)
-            .map_err(|e| FinkError::from(e))?;
+            .map_err(FinkError::from)?;
         Ok(())
     }
 
@@ -139,7 +139,7 @@ impl PromptApplication for DefaultPromptApplication {
         
         // Create the prompt using repository
         self.repository.create_prompt(&normalized_name, &content)
-            .map_err(|e| FinkError::from(e))?;
+            .map_err(FinkError::from)?;
         Ok(())
     }
 
@@ -155,7 +155,7 @@ impl PromptApplication for DefaultPromptApplication {
         
         // Create the prompt using repository
         self.repository.create_prompt(&normalized_name, &prompt_content)
-            .map_err(|e| FinkError::from(e))?;
+            .map_err(FinkError::from)?;
         Ok(())
     }
 
@@ -179,7 +179,7 @@ impl PromptApplication for DefaultPromptApplication {
         }
         
         self.repository.delete_prompt(&metadata.file_path)
-            .map_err(|e| FinkError::from(e))
+            .map_err(FinkError::from)
     }
 
     fn copy_prompt(&self, name: &str) -> Result<()> {

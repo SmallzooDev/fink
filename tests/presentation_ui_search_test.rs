@@ -1,4 +1,4 @@
-use fink::presentation::tui::tui::{AppMode, TUIApp};
+use fink::presentation::tui::app::{AppMode, TUIApp};
 use fink::presentation::tui::components::search::HighlightedText;
 use tempfile::tempdir;
 use std::fs;

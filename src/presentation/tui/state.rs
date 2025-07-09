@@ -1,4 +1,4 @@
-use crate::presentation::tui::tui::AppMode;
+use crate::presentation::tui::app::AppMode;
 use crate::presentation::tui::components::confirmation_dialog::ConfirmationAction;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -34,8 +34,8 @@ pub struct UIState {
     pending_command: Option<AppCommand>,
 }
 
-impl UIState {
-    pub fn new() -> Self {
+impl Default for UIState {
+    fn default() -> Self {
         Self {
             selected_index: 0,
             total_items: 0,
@@ -45,6 +45,12 @@ impl UIState {
             confirmation_action: None,
             pending_command: None,
         }
+    }
+}
+
+impl UIState {
+    pub fn new() -> Self {
+        Self::default()
     }
 
     pub fn set_total_items(&mut self, total: usize) {

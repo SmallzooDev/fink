@@ -14,7 +14,7 @@ pub struct StandardLayout {
 }
 
 impl StandardLayout {
-    pub fn new() -> StandardLayoutBuilder {
+    pub fn builder() -> StandardLayoutBuilder {
         StandardLayoutBuilder::default()
     }
 }

@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod state_restoration_tests {
-    use fink::presentation::tui::tui::{TUIApp, AppMode};
+    use fink::presentation::tui::app::{TUIApp, AppMode};
     use fink::utils::config::Config;
     use fink::utils::state::AppState;
     use tempfile::TempDir;

@@ -1,5 +1,5 @@
 use fink::application::traits::PromptApplication;
-use fink::application::application::DefaultPromptApplication;
+use fink::application::app::DefaultPromptApplication;
 use tempfile::TempDir;
 use std::fs;
 use std::path::PathBuf;

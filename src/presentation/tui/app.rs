@@ -1,4 +1,4 @@
-use crate::application::application::DefaultPromptApplication;
+use crate::application::app::DefaultPromptApplication;
 use crate::application::traits::PromptApplication;
 use crate::presentation::tui::components::{PromptList, confirmation_dialog::{ConfirmationDialog as Dialog, ConfirmationAction}, TagManagementDialog, TagFilterDialog, CreateDialog, BuildPanel, InteractiveBuildPanel};
 use crate::presentation::tui::screens::ConfigScreen;
@@ -452,12 +452,9 @@ impl TUIApp {
 
     pub fn confirm_action(&mut self) -> Result<()> {
         if let Some(dialog) = self.confirmation_dialog.take() {
-            match dialog.get_action() {
-                ConfirmationAction::Delete(name) => {
-                    self.application.delete_prompt(name, true)?;
-                    self.reload_prompts()?;
-                }
-                _ => {} // Handle other action types in the future
+            if let ConfirmationAction::Delete(name) = dialog.get_action() {
+                self.application.delete_prompt(name, true)?;
+                self.reload_prompts()?;
             }
         }
         Ok(())
@@ -493,10 +490,8 @@ impl TUIApp {
             .iter()
             .filter(|p| {
                 // Apply tag filter if active
-                if !self.active_tag_filters.is_empty() {
-                    if !self.active_tag_filters.iter().any(|tag| p.tags.contains(tag)) {
-                        return false;
-                    }
+                if !self.active_tag_filters.is_empty() && !self.active_tag_filters.iter().any(|tag| p.tags.contains(tag)) {
+                    return false;
                 }
                 
                 // Apply search filter if active

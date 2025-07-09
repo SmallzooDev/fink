@@ -1,4 +1,4 @@
-use fink::presentation::tui::tui::TUIApp;
+use fink::presentation::tui::app::TUIApp;
 use fink::utils::config::Config;
 use tempfile::tempdir;
 

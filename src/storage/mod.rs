@@ -64,7 +64,9 @@ impl FileSystem {
                     let type_option = extract_type_from_content(&content);
                     
                     // If no type or invalid type, update the file with default type
-                    let prompt_type = if type_option.is_none() {
+                    let prompt_type = if let Some(prompt_type) = type_option {
+                        prompt_type
+                    } else {
                         // Update file to add type: "whole"
                         if let Ok(updated_content) = crate::utils::frontmatter::FrontmatterUpdater::ensure_type(&content, &name, type_option) {
                             // Write the updated content back to file
@@ -76,8 +78,6 @@ impl FileSystem {
                             }
                         }
                         crate::application::models::PromptType::default()
-                    } else {
-                        type_option.unwrap()
                     };
                     
                     prompts.push(PromptMetadata {

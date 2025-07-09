@@ -122,7 +122,7 @@ impl BuildPanel {
                     selected_indicator,
                     type_indicator,
                     prompt.name,
-                    prompt.prompt_type.to_string(),
+                    prompt.prompt_type,
                     tags
                 );
                 

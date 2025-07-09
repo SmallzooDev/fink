@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use fink::presentation::tui::tui::{TUIApp, AppMode};
+    use fink::presentation::tui::app::{TUIApp, AppMode};
     use fink::presentation::tui::runner::EventHandler;
     use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
     use tempfile::tempdir;

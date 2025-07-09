@@ -47,14 +47,20 @@ pub struct CreateDialog {
     current_field: DialogField,
 }
 
-impl CreateDialog {
-    pub fn new() -> Self {
+impl Default for CreateDialog {
+    fn default() -> Self {
         Self {
             filename: String::new(),
             template: CreateTemplate::FromClipboard,
             prompt_type: PromptType::default(),
             current_field: DialogField::Filename,
         }
+    }
+}
+
+impl CreateDialog {
+    pub fn new() -> Self {
+        Self::default()
     }
     
     pub fn get_filename(&self) -> &str {

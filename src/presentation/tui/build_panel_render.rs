@@ -1,4 +1,4 @@
-use crate::presentation::tui::tui::TUIApp;
+use crate::presentation::tui::app::TUIApp;
 use crate::presentation::tui::screens::BuildScreen;
 use ratatui::{
     prelude::*,

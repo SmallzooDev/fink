@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use fink::presentation::tui::tui::AppMode;
-    use fink::presentation::tui::tui::TUIApp;
+    use fink::presentation::tui::app::AppMode;
+    use fink::presentation::tui::app::TUIApp;
     use tempfile::tempdir;
     use std::fs;
 

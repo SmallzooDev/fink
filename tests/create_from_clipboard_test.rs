@@ -1,5 +1,5 @@
 use fink::presentation::tui::components::{CreateDialog, CreateTemplate};
-use fink::application::application::DefaultPromptApplication;
+use fink::application::app::DefaultPromptApplication;
 use fink::application::traits::PromptApplication;
 use tempfile::tempdir;
 use std::fs;

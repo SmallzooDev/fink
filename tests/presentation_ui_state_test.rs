@@ -1,5 +1,5 @@
 use fink::presentation::tui::state::{UIState, UIEvent, Direction};
-use fink::presentation::tui::tui::AppMode;
+use fink::presentation::tui::app::AppMode;
 use fink::presentation::tui::components::confirmation_dialog::ConfirmationAction;
 
 #[test]

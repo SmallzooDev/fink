@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod config_mode_tests {
-    use fink::presentation::tui::tui::{TUIApp, AppMode};
+    use fink::presentation::tui::app::{TUIApp, AppMode};
     use fink::utils::config::Config;
     use tempfile::TempDir;
 

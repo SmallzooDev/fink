@@ -6,6 +6,12 @@ pub struct Segment {
 
 pub struct HighlightedText;
 
+impl Default for HighlightedText {
+    fn default() -> Self {
+        Self
+    }
+}
+
 impl HighlightedText {
     pub fn new() -> Self {
         Self

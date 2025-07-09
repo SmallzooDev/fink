@@ -1,4 +1,4 @@
-use crate::presentation::tui::tui::TUIApp;
+use crate::presentation::tui::app::TUIApp;
 use ratatui::{
     prelude::*,
     widgets::{Block, Borders, Paragraph},

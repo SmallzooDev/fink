@@ -1,4 +1,4 @@
-use crate::application::application::DefaultPromptApplication;
+use crate::application::app::DefaultPromptApplication;
 use crate::application::traits::PromptApplication;
 use anyhow::Result;
 use crate::utils::error::FinkError;
