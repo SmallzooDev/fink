@@ -1,5 +1,6 @@
 use crate::presentation::tui::tui::{TUIApp, AppMode};
 use crate::presentation::tui::components::search::HighlightedText;
+use crate::presentation::tui::components::input_field::InputField;
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
@@ -359,9 +360,10 @@ impl<'a> QuickSelectScreen<'a> {
 
     fn render_search_bar(&self, f: &mut Frame, area: Rect) {
         let search_query = self.app.get_search_query();
-        let search_text = format!("Search: {}_", search_query);
         
-        let search_bar = Paragraph::new(search_text)
+        let search_field = InputField::new(search_query)
+            .prefix("Search: ")
+            .show_cursor(true)
             .style(Style::default().fg(Color::Yellow))
             .block(Block::default()
                 .borders(Borders::ALL)
@@ -369,7 +371,7 @@ impl<'a> QuickSelectScreen<'a> {
                 .title("Search (Esc to cancel)")
                 .border_style(Style::default().fg(Color::Yellow)));
         
-        f.render_widget(search_bar, area);
+        f.render_widget(search_field, area);
     }
 
 }

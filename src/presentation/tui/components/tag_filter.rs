@@ -6,6 +6,7 @@ use ratatui::{
     widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph, Wrap},
 };
 use std::collections::HashSet;
+use crate::presentation::tui::components::input_field::InputField;
 
 pub struct TagFilterDialog {
     available_tags: Vec<String>,
@@ -142,13 +143,21 @@ impl TagFilterDialog {
                 Style::default().fg(Color::DarkGray)
             });
         
-        let search_text = Paragraph::new(self.search_query.as_str())
+        let search_field = InputField::new(&self.search_query)
+            .show_cursor(false) // We'll handle cursor separately
             .block(search_block);
-        f.render_widget(search_text, chunks[0]);
+        f.render_widget(search_field, chunks[0]);
         
         // Show cursor in search box when in search mode
         if self.is_searching {
-            let cursor_x = chunks[0].x + 1 + self.cursor_position as u16;
+            // Calculate cursor position based on visible text
+            let inner_width = chunks[0].width.saturating_sub(2);
+            let visible_cursor_pos = if self.search_query.len() > inner_width as usize {
+                inner_width - 1 // Put cursor at the end of visible area
+            } else {
+                self.cursor_position as u16
+            };
+            let cursor_x = chunks[0].x + 1 + visible_cursor_pos;
             let cursor_y = chunks[0].y + 1;
             f.set_cursor(cursor_x, cursor_y);
         }

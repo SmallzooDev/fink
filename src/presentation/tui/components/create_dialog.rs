@@ -6,6 +6,7 @@ use ratatui::{
     widgets::{Block, Borders, Clear, Paragraph, Widget},
 };
 use crate::application::models::PromptType;
+use crate::presentation::tui::components::input_field::InputField;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum DialogField {
@@ -198,21 +199,19 @@ impl Widget for &CreateDialog {
             .border_type(ratatui::widgets::BorderType::Rounded)
             .border_style(filename_style);
         
-        let filename_text = if self.filename.is_empty() && self.current_field == DialogField::Filename {
+        // Handle empty filename case
+        if self.filename.is_empty() && self.current_field == DialogField::Filename {
             Paragraph::new("_")
                 .style(Style::default().fg(Color::DarkGray))
+                .block(filename_block)
+                .render(chunks[0], buf);
         } else {
-            let display_text = if self.current_field == DialogField::Filename {
-                format!("{}_", self.filename)
-            } else {
-                self.filename.clone()
-            };
-            Paragraph::new(display_text)
-        };
-        
-        filename_text
-            .block(filename_block)
-            .render(chunks[0], buf);
+            // Use InputField for non-empty filename
+            let filename_field = InputField::new(&self.filename)
+                .show_cursor(self.current_field == DialogField::Filename)
+                .block(filename_block);
+            filename_field.render(chunks[0], buf);
+        }
         
         // Template selection
         let template_style = if self.current_field == DialogField::Template {
