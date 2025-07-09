@@ -48,16 +48,6 @@ impl EventHandler {
         false
     }
     
-    fn handle_update_dialog(&self, app: &mut TUIApp, key: &KeyEvent) -> Result<()> {
-        match key.code {
-            KeyCode::Enter | KeyCode::Esc => {
-                app.close_update_dialog();
-            }
-            _ => {} // Ignore other keys while update dialog is showing
-        }
-        Ok(())
-    }
-    
     fn handle_init_dialog(&self, app: &mut TUIApp, key: &KeyEvent) -> Result<()> {
         match key.code {
             KeyCode::Char('y') | KeyCode::Char('Y') => {
@@ -569,11 +559,6 @@ impl EventHandler {
             // Handle global shortcuts first
             if self.handle_global_shortcuts(app, &key) {
                 return Ok(());
-            }
-            
-            // Handle update dialog if showing
-            if app.is_showing_update_dialog() {
-                return self.handle_update_dialog(app, &key);
             }
             
             // Handle initialization dialog if showing

@@ -7,7 +7,6 @@ pub mod create_dialog;
 pub mod build_panel;
 pub mod interactive_build_panel;
 pub mod init_dialog;
-pub mod update_dialog;
 pub mod type_prompts_dialog;
 
 pub use prompt_list::PromptList;
@@ -17,5 +16,4 @@ pub use create_dialog::{CreateDialog, DialogField, CreateTemplate};
 pub use build_panel::BuildPanel;
 pub use interactive_build_panel::{InteractiveBuildPanel, BuildStep};
 pub use init_dialog::InitDialog;
-pub use update_dialog::UpdateDialog;
 pub use type_prompts_dialog::TypePromptsDialog;

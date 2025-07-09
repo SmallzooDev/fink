@@ -1,9 +1,8 @@
 use crate::application::application::DefaultPromptApplication;
 use crate::application::traits::PromptApplication;
-use crate::presentation::tui::components::{PromptList, confirmation_dialog::{ConfirmationDialog as Dialog, ConfirmationAction}, TagManagementDialog, TagFilterDialog, CreateDialog, BuildPanel, InteractiveBuildPanel, UpdateDialog};
+use crate::presentation::tui::components::{PromptList, confirmation_dialog::{ConfirmationDialog as Dialog, ConfirmationAction}, TagManagementDialog, TagFilterDialog, CreateDialog, BuildPanel, InteractiveBuildPanel};
 use crate::utils::config::Config;
 use crate::utils::constants::PROMPTS_DIR;
-use crate::utils::version::VersionTracker;
 use anyhow::Result;
 use ratatui::widgets::ListState;
 use std::path::PathBuf;
@@ -45,7 +44,6 @@ pub struct TUIApp {
     error_message: Option<String>,
     success_message: Option<String>,
     init_dialog_active: bool,
-    update_dialog: Option<UpdateDialog>,
     type_prompts_dialog_active: bool,
 }
 
@@ -67,25 +65,6 @@ impl TUIApp {
         let prompts_dir = base_path.join(PROMPTS_DIR);
         let init_flag = prompts_dir.join(".initialized");
         let is_first_launch = !init_flag.exists() && prompts_metadata.is_empty();
-        
-        // Check for version update
-        let version_tracker = VersionTracker::new(Config::config_dir());
-        let is_updated = !is_first_launch && version_tracker.is_updated().unwrap_or(false);
-        let update_dialog = if is_updated {
-            // Get update notes and create dialog
-            if let Ok(Some(notes)) = version_tracker.get_update_notes() {
-                Some(UpdateDialog::new(notes))
-            } else {
-                None
-            }
-        } else {
-            None
-        };
-        
-        // Store current version for next run (only if not showing update dialog)
-        if !is_updated {
-            let _ = version_tracker.store_current_version();
-        }
 
         Ok(Self {
             mode,
@@ -109,7 +88,6 @@ impl TUIApp {
             error_message: None,
             success_message: None,
             init_dialog_active: is_first_launch,
-            update_dialog,
             type_prompts_dialog_active: false,
         })
     }
@@ -123,25 +101,6 @@ impl TUIApp {
         let prompts_dir = config.storage_path().join(PROMPTS_DIR);
         let init_flag = prompts_dir.join(".initialized");
         let is_first_launch = !init_flag.exists() && prompts_metadata.is_empty();
-        
-        // Check for version update
-        let version_tracker = VersionTracker::new(Config::config_dir());
-        let is_updated = !is_first_launch && version_tracker.is_updated().unwrap_or(false);
-        let update_dialog = if is_updated {
-            // Get update notes and create dialog
-            if let Ok(Some(notes)) = version_tracker.get_update_notes() {
-                Some(UpdateDialog::new(notes))
-            } else {
-                None
-            }
-        } else {
-            None
-        };
-        
-        // Store current version for next run (only if not showing update dialog)
-        if !is_updated {
-            let _ = version_tracker.store_current_version();
-        }
 
         Ok(Self {
             mode,
@@ -165,7 +124,6 @@ impl TUIApp {
             error_message: None,
             success_message: None,
             init_dialog_active: is_first_launch,
-            update_dialog,
             type_prompts_dialog_active: false,
         })
     }
@@ -768,24 +726,6 @@ impl TUIApp {
         // Close dialog
         self.init_dialog_active = false;
         Ok(())
-    }
-    
-    // Update dialog methods
-    pub fn is_showing_update_dialog(&self) -> bool {
-        self.update_dialog.is_some()
-    }
-    
-    pub fn close_update_dialog(&mut self) {
-        if self.update_dialog.is_some() {
-            // Store current version now that user has seen the update
-            let version_tracker = VersionTracker::new(Config::config_dir());
-            let _ = version_tracker.store_current_version();
-        }
-        self.update_dialog = None;
-    }
-    
-    pub fn get_update_dialog(&self) -> Option<&UpdateDialog> {
-        self.update_dialog.as_ref()
     }
     
     // Type prompts dialog methods
